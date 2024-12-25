@@ -1,20 +1,24 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import time
 import sys
-sys.setrecursionlimit(80000)  # Increase the limit to 2000 or higher as needed
+
+sys.setrecursionlimit(80000)  # Increase the limit as needed
 
 # Daftar Stopwords
 stopwords = {
     'yang', 'untuk', 'dengan', 'di', 'ke', 'pada', 'adalah', 'itu', 'dan', 'tersebut',
     'saya', 'kami', 'mereka', 'memiliki', 'menjadi', 'menyebabkan', 'menggunakan', 'untuk',
     'seperti', 'mempunyai', 'menulis', 'berada', 'menghadapi', 'belajar', 'setiap',
-    'akan', 'sudah', 'sedang', 'dari', 'dalam', 'sebuah', 'hingga' , 'ini' , 'aku', 'hari' ,'kita', 'semoga', 'merasa', 'daerah', 'sangat', 'masyarakat', 'lebih', 'banyak', 'oleh', 'memberikan'
+    'akan', 'sudah', 'sedang', 'dari', 'dalam', 'sebuah', 'hingga', 'ini', 'aku', 'hari', 'kita', 'semoga', 'merasa', 'daerah', 'sangat', 'masyarakat', 'lebih', 'banyak', 'oleh', 'memberikan'
 }
+
 def bersihkan_kata(kata):
     return kata.strip('.,!?')
+
 def pecah_kata(postingan):
     return [bersihkan_kata(kata) for kata in postingan.lower().split()]
+
 # Fungsi rekursif Merge Sort
 def merge_sort_rekursif(data):
     if len(data) > 1:
@@ -63,37 +67,30 @@ def selection_sort_iteratif(data):
 def linier_search_iteratif(postingan_list):
     frekuensi = {}
     for postingan in postingan_list:
-       for kata in pecah_kata(postingan):
+        for kata in pecah_kata(postingan):
             if kata and kata not in stopwords:  # Abaikan stopwords dan kata kosong
-                # Linear Search untuk memeriksa apakah kata sudah ada di dictionary
                 found = False
                 for key in frekuensi:
                     if key == kata:
                         found = True
-                        break  # Jika ditemukan, hentikan pencarian
+                        break
                 if found:
                     frekuensi[kata] += 1
                 else:
                     frekuensi[kata] = 1
-    # Ambil hanya kata yang muncul lebih dari satu kali
     return {kata: jumlah for kata, jumlah in frekuensi.items() if jumlah > 1}
-
-
 
 def linier_search_rekursif(postingan_list, frekuensi=None, index=0):
     if frekuensi is None:
         frekuensi = {}
 
-    # Basis kasus: jika index sudah mencapai akhir list
     if index == len(postingan_list):
         return {kata: jumlah for kata, jumlah in frekuensi.items() if jumlah > 1}
 
     postingan = postingan_list[index]
-    
-    # Proses postingan saat ini
+
     for kata in pecah_kata(postingan):
-        if kata and kata not in stopwords:  # Abaikan stopwords dan kata kosong
-            # Linear Search: cek apakah kata sudah ada dalam frekuensi
+        if kata and kata not in stopwords:
             def linear_check(kata, keys, idx=0):
                 if idx == len(keys):
                     return False
@@ -101,31 +98,23 @@ def linier_search_rekursif(postingan_list, frekuensi=None, index=0):
                     return True
                 return linear_check(kata, keys, idx + 1)
 
-            # Pencarian linear untuk melihat apakah kata sudah ada
             if linear_check(kata, list(frekuensi.keys())):
                 frekuensi[kata] += 1
             else:
                 frekuensi[kata] = 1
 
-    # Rekursi ke postingan berikutnya
     return linier_search_rekursif(postingan_list, frekuensi, index + 1)
-
-
-
-
 
 # Fungsi utama untuk hitung frekuensi dan sorting
 def hitung_waktu_eksekusi(teks, freq_recursive=False, sort_recursive=False):
     postingan_list = [post.strip() for post in teks.split('.') if post.strip()]
     mulai = time.perf_counter()
 
-    # Hitung frekuensi
     if freq_recursive:
         hasil_frekuensi = linier_search_rekursif(postingan_list)
     else:
         hasil_frekuensi = linier_search_iteratif(postingan_list)
 
-    # Sorting hasil
     data = list(hasil_frekuensi.items())
     if sort_recursive:
         data = merge_sort_rekursif(data)
@@ -133,135 +122,1192 @@ def hitung_waktu_eksekusi(teks, freq_recursive=False, sort_recursive=False):
         data = selection_sort_iteratif(data)
 
     selesai = time.perf_counter()
-    waktu_eksekusi = (selesai - mulai) * 1_000_000  # Waktu dalam mikrodetik
+    waktu_eksekusi = (selesai - mulai) * 1_000_000
     return data, len(postingan_list), waktu_eksekusi
 
-# Aplikasi GUI utama dengan menu
-class TwitterTrendApp:
+data_postingan = [
+    "Innalillahi, Satu keluarga ditemukan tewas diduga karena bun*h d1r1 di Ciputat Timur, Tangerang Selatan, Minggu (15/12/2024), Berdasarkan keterangan sejumlah saksi keluarga korban sempat bercerita sang ayah terjerat pinjaman online (pinjol).",
+    "Innalillahi turut berduka untuk korban.",
+    "Innalillahi Kapal basarnas meledak dan terbakar.",
+    "Kemarin terjadi kecelakaan besar di jalan raya, inalillahi wa inna ilaihi raji'un.",
+    "Inalillahi, kabar duka dari keluarga teman saya.",
+    "Semoga semua yang terdampak bencana diberikan kekuatan.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan tokoh besar hari ini.",
+    "Alhamdulillah, semua urusan hari ini berjalan lancar.",
+    "Hari ini cuaca sangat cerah, semoga tetap seperti ini.",
+    "Inalillahi, tetangga saya meninggal dunia pagi tadi.",
+    "Semoga almarhum diterima di sisi-Nya, inalillahi.",
+    "Bencana banjir melanda wilayah ini, inalillahi.",
+    "Senang sekali akhirnya bisa menyelesaikan pekerjaan tepat waktu.",
+    "Inalillahi, semoga keluarga yang ditinggalkan diberi kekuatan.",
+    "Pekerjaan menumpuk, tapi tetap harus disyukuri.",
+    "Bersyukur atas segala nikmat yang diberikan hari ini.",
+    "Inalillahi, baru saja mendengar kabar duka dari sahabat dekat.",
+    "Semoga semua keluarga yang terkena bencana tetap tabah.",
+    "Hari ini benar-benar melelahkan, tapi penuh pelajaran.",
+    "Inalillahi, semoga arwahnya diterima di sisi-Nya.",
+    "Berita duka terus berdatangan, inalillahi.",
+    "Hari ini penuh kejutan, semoga semuanya berjalan lancar.",
+    "Alhamdulillah bisa berkumpul bersama keluarga.",
+    "Inalillahi wa inna ilaihi raji'un, semoga diberi tempat terbaik.",
+    "Kabar kehilangan seorang guru besar, inalillahi.",
+    "Semoga yang sedang sakit segera diberikan kesembuhan.",
+    "Inalillahi, kabar duka dari seorang tetangga.",
+    "Pagi ini benar-benar cerah, semangat menjalani aktivitas.",
+    "Inalillahi, berita duka dari kampung halaman.",
+    "Semoga semua orang yang menghadapi musibah tetap kuat.",
+    "Hari ini benar-benar sibuk, tapi sangat menyenangkan.",
+    "Inalillahi, semoga amal ibadahnya diterima.",
+    "Sedih mendengar kabar bencana ini, inalillahi.",
+    "Menunggu waktu berbuka puasa bersama keluarga tercinta.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan seorang sahabat.",
+    "Semoga semua doa kita didengar oleh Allah SWT.",
+    "Bersyukur atas nikmat kesehatan hari ini.",
+    "Inalillahi, kabar duka dari teman dekat.",
+    "Semoga keluarga yang ditinggalkan tetap tabah, inalillahi.",
+    "Alhamdulillah, hari ini berjalan dengan sangat lancar.",
+    "Inalillahi wa inna ilaihi raji'un, semoga diberi tempat terbaik.",
+    "Bencana gempa melanda beberapa wilayah, inalillahi.",
+    "Senang sekali bisa kembali ke kampung halaman.",
+    "Inalillahi, kehilangan seorang tokoh besar.",
+    "Semoga segala urusan kita dipermudah oleh Allah SWT.",
+    "Hari ini benar-benar penuh berkah.",
+    "Inalillahi wa inna ilaihi raji'un, kabar duka datang lagi.",
+    "Semoga semua keluarga yang terkena musibah tetap diberi kekuatan.",
+    "Bersyukur masih bisa berkumpul dengan keluarga hari ini.",
+    "Inalillahi, baru saja mendengar kabar duka.",
+    "Semoga almarhum diterima di sisi-Nya, inalillahi.",
+    "Kabar duka terus berdatangan, inalillahi wa inna ilaihi raji'un.",
+    "Semoga yang sedang menghadapi ujian hidup tetap tabah.",
+    "Alhamdulillah, bisa menyelesaikan pekerjaan dengan baik.",
+    "Inalillahi, semoga keluarga yang ditinggalkan diberi kekuatan.",
+    "Bencana banjir terus meluas, inalillahi.",
+    "Senang sekali akhirnya bisa menyelesaikan pekerjaan tepat waktu.",
+    "Semoga segala urusan hari ini berjalan lancar.",
+    "Hari ini benar-benar penuh kejutan.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan tokoh besar hari ini.",
+    "Kabar kehilangan seorang guru besar, inalillahi.",
+    "Semoga semua yang terdampak bencana diberikan kekuatan.",
+    "Bersyukur atas segala nikmat yang diberikan hari ini.",
+    "Inalillahi, kabar duka dari kampung halaman.",
+    "Semoga yang sedang sakit segera diberikan kesembuhan.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan seorang sahabat.",
+    "Kabar duka terus berdatangan, inalillahi.",
+    "Alhamdulillah, semua urusan hari ini berjalan lancar.",
+    "Semoga keluarga yang ditinggalkan tetap tabah, inalillahi.",
+    "Hari ini benar-benar sibuk, tapi sangat menyenangkan.",
+    "Semoga semua doa kita didengar oleh Allah SWT.",
+    "Bersyukur atas nikmat kesehatan hari ini.",
+    "Inalillahi, kabar duka dari teman dekat.",
+    "Semoga keluarga yang ditinggalkan tetap tabah, inalillahi.",
+    "Hari ini penuh kejutan, semoga semuanya berjalan lancar.",
+    "Alhamdulillah bisa berkumpul bersama keluarga.",
+    "Semoga yang sedang menghadapi ujian hidup tetap tabah.",
+    "Kabar kehilangan seorang guru besar, inalillahi.",
+    "Semoga segala urusan kita dipermudah oleh Allah SWT.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan tokoh besar hari ini.",
+    "Bencana gempa melanda beberapa wilayah, inalillahi.",
+    "Semoga semua keluarga yang terkena musibah tetap tabah.",
+    "Pekerjaan menumpuk, tapi tetap harus disyukuri.",
+    "Hari ini benar-benar cerah, semangat menjalani aktivitas.",
+    "Inalillahi wa inna ilaihi raji'un, kabar duka datang lagi.",
+    "Kabar duka terus berdatangan, inalillahi wa inna ilaihi raji'un.",
+    "Semoga yang sedang sakit segera diberikan kesembuhan.",
+    "Bencana banjir melanda wilayah ini, inalillahi.",
+    "Semoga keluarga yang ditinggalkan tetap tabah, inalillahi.",
+    "Senang sekali bisa kembali ke kampung halaman.",
+    "Inalillahi, kehilangan seorang tokoh besar.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan seorang sahabat.",
+    "Bencana gempa melanda beberapa wilayah, inalillahi.",
+    "Semoga segala urusan hari ini berjalan lancar.",
+    "Bersyukur masih bisa berkumpul dengan keluarga hari ini.",
+    "Hari ini penuh kejutan, semoga semuanya berjalan lancar.",
+    "Alhamdulillah, bisa menyelesaikan pekerjaan dengan baik.",
+    "Semoga almarhum diterima di sisi-Nya, inalillahi.",
+    "Kabar kehilangan seorang guru besar, inalillahi.",
+    "Alhamdulillah, semua urusan hari ini berjalan lancar.",
+    "Inalillahi, kabar duka dari kampung halaman.",
+    "Semoga semua yang terdampak bencana diberikan kekuatan.",
+    "Bersyukur atas segala nikmat yang diberikan hari ini.",
+    "Semoga yang sedang sakit segera diberikan kesembuhan.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan seorang sahabat.",
+    "Semoga semua doa kita didengar oleh Allah SWT.",
+    "Bersyukur atas nikmat kesehatan hari ini.",
+    "Inalillahi, kabar duka dari teman dekat.",
+    "Semoga keluarga yang ditinggalkan tetap tabah, inalillahi.",
+    "Inalillahi wa inna ilaihi raji'un, kehilangan tokoh besar hari ini.",
+    "#Terpaut",
+    "Minggu enaknya mincing.",
+    "Milik kita bersama!❤️🙆🏻‍♀️ #Terpaut.",
+    "minggu besok senin",
+    "Ready #vcs",
+    "Bisa sekarang #terpaut",
+    "Wa di profil",
+    "#MimpiIndah.",
+    "Aku merasa sangat #Terpaut dengan kenangan masa lalu.",
+    "Film ini benar-benar menyentuh hati, aku #Terpaut dengan alur ceritanya.",
+    "Kita semua saling #Terpaut melalui kisah kehidupan.",
+    "Dalam suasana seperti ini, hati terasa #Terpaut pada keluarga.",
+    "Semakin lama aku semakin #Terpaut pada lagu ini.",
+    "Cinta pertama selalu meninggalkan rasa #Terpaut di hati.",
+    "Setiap hari aku merasa #Terpaut pada semangatnya.",
+    "#Terpaut pada kenangan masa kecil yang tak terlupakan.",
+    "Hidup ini penuh warna, aku #Terpaut pada kebahagiaan.",
+    "Hubungan jarak jauh ini membuat kita semakin #Terpaut.",
+    "Aku dan kamu saling #Terpaut oleh takdir.",
+    "Dalam perjalanan ini, aku merasa sangat #Terpaut pada tujuan kita.",
+    "Kadang, lagu-lagu lama membuatku #Terpaut pada masa lalu.",
+    "Semua hal yang kita lalui telah membuat kita #Terpaut satu sama lain.",
+    "Dalam doa, aku merasa sangat #Terpaut dengan Sang Pencipta.",
+    "Ketika aku membaca buku ini, aku merasa #Terpaut dengan karakternya.",
+    "Kenangan liburan terakhir membuatku #Terpaut pada pantai itu.",
+    "Aku tak bisa menjelaskan kenapa, tapi aku merasa sangat #Terpaut.",
+    "Melihat senyummu selalu membuatku #Terpaut pada momen ini.",
+    "Hubungan ini terasa begitu spesial, aku benar-benar #Terpaut.",
+    "Hari-hari berlalu, tetapi aku tetap #Terpaut pada mimpiku.",
+    "Kebersamaan ini membuatku merasa lebih #Terpaut dari sebelumnya.",
+    "Foto ini benar-benar membuatku #Terpaut pada masa lalu.",
+    "Semakin lama kita kenal, aku semakin #Terpaut padamu.",
+    "Tidak semua orang bisa merasakan rasa #Terpaut seperti ini.",
+    "Aku #Terpaut pada aroma kopi di pagi hari.",
+    "Suara hujan di malam ini membuatku #Terpaut pada nostalgia.",
+    "Film ini penuh emosi, aku sangat #Terpaut pada ceritanya.",
+    "Dalam diam, aku #Terpaut pada doa-doa untukmu.",
+    "Aku tak bisa berhenti membaca novel ini, aku sangat #Terpaut.",
+    "Ketika aku melukis, aku merasa begitu #Terpaut pada karyaku.",
+    "Kebahagiaan sederhana ini membuatku #Terpaut pada hidup.",
+    "Mendengar kabar baik darimu membuatku merasa #Terpaut lagi.",
+    "Dalam perjalanan cinta ini, aku merasa sangat #Terpaut padamu.",
+    "Saat berbicara denganmu, aku merasa #Terpaut dalam keheningan.",
+    "Rasanya seperti ada sesuatu yang selalu membuatku #Terpaut padamu.",
+    "Semua kenangan yang telah kita buat benar-benar #Terpaut di hati.",
+    "Aku #Terpaut pada kisah-kisah yang diceritakan oleh nenekku.",
+    "Musik ini selalu berhasil membuatku #Terpaut pada momen indah.",
+    "Perjalanan ini penuh makna, aku merasa #Terpaut pada setiap langkah.",
+    "Ketika memandangi langit malam, aku merasa #Terpaut dengan alam.",
+    "Semua ini adalah perjalanan yang indah, aku benar-benar #Terpaut.",
+    "Hari ini aku merasa sangat #Terpaut pada hal-hal kecil yang membuat bahagia.",
+    "Aku tak pernah merasa begitu #Terpaut sebelumnya.",
+    "Semakin kita bicara, aku merasa semakin #Terpaut padamu.",
+    "Melihatmu bahagia adalah alasan aku merasa #Terpaut.",
+    "Aku selalu merasa #Terpaut ketika berada di tempat ini.",
+    "Kenangan lama terus membuatku #Terpaut pada hal yang seharusnya kulupakan.",
+    "Aku merasa begitu #Terpaut dengan energi positifmu.",
+    "Semoga aku selalu #Terpaut pada hal-hal yang baik di dunia ini.",
+    "Hubungan ini membuatku merasa sangat #Terpaut, dan aku bahagia.",
+    "Ketika aku mendengar ceritamu, aku langsung #Terpaut pada perjuanganmu.",
+    "Hidup adalah perjalanan yang indah, dan aku merasa sangat #Terpaut.",
+    "Aku #Terpaut pada lagu-lagu yang penuh kenangan.",
+    "Buku ini membuatku #Terpaut pada cerita yang begitu dalam.",
+    "Ketika aku berdoa, aku merasa sangat #Terpaut pada Tuhan.",
+    "Lihat matahari terbenam hari ini, aku merasa begitu #Terpaut pada keindahannya.",
+    "Aku selalu merasa #Terpaut ketika berada di dekatmu.",
+    "Semua perjuangan ini membuatku semakin #Terpaut pada mimpiku.",
+    "Aku tak bisa melepaskan rasa #Terpaut ini, walau aku tahu aku harusnya move on.",
+    "Suasana tenang di pedesaan membuatku merasa #Terpaut pada alam.",
+    "Kita semua saling #Terpaut melalui kenangan indah.",
+    "Aku merasa #Terpaut pada tradisi yang selalu menghangatkan hati.",
+    "Kenangan masa lalu membuatku merasa sangat #Terpaut.",
+    "Perjalanan hidup kita saling #Terpaut oleh cerita yang sama.",
+    "Kadang, hal-hal kecil membuatku #Terpaut pada kebahagiaan.",
+    "Momen sederhana ini benar-benar membuatku #Terpaut.",
+    "Aku #Terpaut pada lagu ini sejak pertama kali mendengarnya.",
+    "Setiap pagi, aku merasa #Terpaut pada rutinitas ini.",
+    "Ketika hujan turun, aku merasa begitu #Terpaut pada suasana ini.",
+    "Melihat bintang-bintang di langit membuatku #Terpaut pada impian.",
+    "Hubungan kita terasa begitu dalam, aku benar-benar #Terpaut.",
+    "Setiap kali aku memikirkannya, aku merasa semakin #Terpaut.",
+    "Aku #Terpaut pada aroma hujan di sore hari.",
+    "Semua ini seperti mimpi, aku merasa begitu #Terpaut.",
+    "Kenangan bersama teman-teman membuatku #Terpaut pada masa sekolah.",
+    "Foto ini adalah bukti bahwa kita pernah saling #Terpaut.",
+    "Musik selalu berhasil membuatku #Terpaut pada momen-momen indah.",
+    "Hari ini penuh warna, aku merasa #Terpaut pada kebahagiaan.",
+    "Kadang-kadang, rasa #Terpaut muncul tanpa sebab.",
+    "Aku #Terpaut pada pandangan pertama.",
+    "Selamat malam!",
+    "Terima kasih yang sebesar-besarnya kami ucapkan kepada seluruh tamu undangan yang telah hadir dan memeriahkan acara ulang tahun Tranquil Apartment #AYearOfTranquility, Kehadiran dan partisipasi Anda semua benar-benar menambah kebahagiaan dan kehangatan acara.",
+    "𝙏𝙊𝘿𝘼𝙔 𝙄𝙎 𝘿-𝘿𝘼𝙔!!! #AYearOfTranquility.",
+    "𝐀 𝐘𝐄𝐀𝐑 𝐎𝐅 𝐓𝐑𝐀𝐍𝐐𝐔𝐈𝐋𝐈𝐓𝐘",
+    "𝗚𝗮𝗹𝗮 𝗗𝗶𝗻𝗻𝗲𝗿, 𝗖𝗵𝗮𝗿𝗶𝘁𝘆 & 𝗔𝘂𝗰𝘁𝗶𝗼𝗻",
+    "𝗥𝗶𝘁𝘇-𝗖𝗮𝗿𝗹𝘁𝗼𝗻 𝗝𝗮𝗸𝗮𝗿𝘁𝗮",
+    "Sunday, 15 December 2024 - 15:00 WIB",
+    "#AYearOfTranquility.",
+    "Hidup tenang adalah pilihan. #AYearOfTranquility",
+    "Semoga tahun ini penuh kedamaian. #AYearOfTranquility",
+    "Meninggalkan keramaian untuk menemukan ketenangan. #AYearOfTranquility",
+    "Menghargai setiap momen kecil. #AYearOfTranquility",
+    "Ketenangan jiwa adalah harta tak ternilai. #AYearOfTranquility",
+    "Merenung sejenak untuk mensyukuri hidup. #AYearOfTranquility",
+    "Alam mengajarkan kita tentang arti ketenangan. #AYearOfTranquility",
+    "Mengambil jeda untuk menikmati keindahan hidup. #AYearOfTranquility",
+    "Semua ini adalah perjalanan menuju ketenangan. #AYearOfTranquility",
+    "Menikmati pagi dengan secangkir teh. #AYearOfTranquility",
+    "Mengatur ritme hidup untuk lebih damai. #AYearOfTranquility",
+    "Melihat matahari terbenam membuat hati damai. #AYearOfTranquility",
+    "Berfokus pada hal-hal sederhana yang membawa kebahagiaan. #AYearOfTranquility",
+    "Menghargai setiap napas yang diberikan. #AYearOfTranquility",
+    "Ketenangan datang ketika kita berdamai dengan diri sendiri. #AYearOfTranquility",
+    "Merangkul momen-momen kecil yang berarti. #AYearOfTranquility",
+    "Berjalan di tengah hutan memberikan rasa damai. #AYearOfTranquility",
+    "Bersyukur atas setiap kesempatan yang ada. #AYearOfTranquility",
+    "Meninggalkan hiruk pikuk kota untuk ketenangan. #AYearOfTranquility",
+    "Hidup adalah tentang menemukan keseimbangan. #AYearOfTranquility",
+    "Meninggalkan yang toksik, memeluk kedamaian. #AYearOfTranquility",
+    "Meditasi membawa kita lebih dekat pada ketenangan. #AYearOfTranquility",
+    "Ketika kita berhenti sejenak, ketenangan datang. #AYearOfTranquility",
+    "Menghargai waktu bersama keluarga. #AYearOfTranquility",
+    "Ketika hujan turun, dunia terasa damai. #AYearOfTranquility",
+    "Melihat keindahan langit malam yang penuh bintang. #AYearOfTranquility",
+    "Menghabiskan waktu dengan diri sendiri adalah hal berharga. #AYearOfTranquility",
+    "Meninggalkan kesibukan untuk menemukan kedamaian. #AYearOfTranquility",
+    "Ketenangan adalah bentuk tertinggi dari kebahagiaan. #AYearOfTranquility",
+    "Beristirahat dari media sosial untuk ketenangan. #AYearOfTranquility",
+    "Merenungkan masa lalu untuk memahami diri sendiri. #AYearOfTranquility",
+    "Mengatur ulang prioritas hidup untuk kedamaian. #AYearOfTranquility",
+    "Menghargai suara burung di pagi hari. #AYearOfTranquility",
+    "Berjalan di pantai sambil menikmati angin. #AYearOfTranquility",
+    "Setiap momen adalah kesempatan untuk bersyukur. #AYearOfTranquility",
+    "Melepas semua beban untuk meraih ketenangan. #AYearOfTranquility",
+    "Menemukan keindahan dalam kesederhanaan. #AYearOfTranquility",
+    "Mengambil waktu untuk diri sendiri adalah penting. #AYearOfTranquility",
+    "Mendengar suara ombak adalah terapi jiwa. #AYearOfTranquility",
+    "Keseimbangan adalah kunci menuju kebahagiaan. #AYearOfTranquility",
+    "Hidup adalah tentang menikmati setiap langkah. #AYearOfTranquility",
+    "Menghirup udara segar pagi ini, rasanya luar biasa. #AYearOfTranquility",
+    "Setiap hari adalah kesempatan untuk menemukan kedamaian. #AYearOfTranquility",
+    "Mengurangi kecepatan untuk menikmati hidup. #AYearOfTranquility",
+    "Berjalan tanpa tujuan, hanya menikmati perjalanan. #AYearOfTranquility",
+    "Berkomunikasi dengan alam membawa rasa damai. #AYearOfTranquility",
+    "Menjaga kesehatan mental dengan hidup lebih sederhana. #AYearOfTranquility",
+    "Menghargai keberadaan orang-orang tercinta. #AYearOfTranquility",
+    "Membaca buku di sore hari, betapa tenangnya. #AYearOfTranquility",
+    "Melihat pelangi setelah hujan membawa kebahagiaan. #AYearOfTranquility",
+    "Momen kecil sering kali membawa kebahagiaan besar. #AYearOfTranquility",
+    "Berjalan di taman memberikan rasa damai yang tak tergantikan. #AYearOfTranquility",
+    "Merenungkan arti hidup adalah langkah awal menuju kedamaian. #AYearOfTranquility",
+    "Menikmati setiap gigitan makanan favorit. #AYearOfTranquility",
+    "Mengurangi ekspektasi, meningkatkan kebahagiaan. #AYearOfTranquility",
+    "Berjalan tanpa gangguan teknologi adalah hal yang menenangkan. #AYearOfTranquility",
+    "Menemukan ketenangan dalam kekacauan. #AYearOfTranquility",
+    "Merayakan setiap langkah kecil menuju kebahagiaan. #AYearOfTranquility",
+    "Hidup ini penuh keajaiban kecil. #AYearOfTranquility",
+    "Setiap pagi adalah awal baru yang penuh harapan. #AYearOfTranquility",
+    "Aku memilih damai daripada drama. #AYearOfTranquility",
+    "Melihat senyuman seseorang yang kita cintai adalah kedamaian sejati. #AYearOfTranquility",
+    "Hidup tidak perlu sempurna untuk menjadi indah. #AYearOfTranquility",
+    "Menikmati sinar matahari pagi dengan penuh syukur. #AYearOfTranquility",
+    "Ketenangan datang dari hati yang penuh rasa syukur. #AYearOfTranquility",
+    "Melihat awan bergerak di langit adalah terapi. #AYearOfTranquility",
+    "Membuat secangkir kopi dan menikmati keheningan pagi. #AYearOfTranquility",
+    "Mengambil waktu untuk benar-benar mendengarkan. #AYearOfTranquility",
+    "Mengurangi kesibukan untuk hidup lebih bermakna. #AYearOfTranquility",
+    "Ini bukan sebuah adegan film perang,ini Gaza.",
+    "Kelaparan yang paksa oleh teroris zionis Israel di Gaza adalah tindakan genosida.",
+    "Sukabumi ApelPagi NASA PPN 12% Babi JIN IS COMING No Viral No Justice GJLS TLID.",
+    "Malaikat mungil ini bernama Jude Nidal Abu Reida berusia 2 tahun, dia menderita gangguan ginjal karena kekurangan gizi akibat blokade teroris zionis Israel 💔Sukabumi ApelPagi NASA PPN 12% Babi JIN IS COMING No Viral No Justice GJLS TLID.",
+    "Thank you very much, thank you from the bottom of my heart, thank you from all of us on behalf of the people of Palestine, thank you.",
+    "Sukabumi ApelPagi NASA PPN 12% Babi JIN IS COMING No Viral No Justice GJLS TLID.",
+    "ApelPagi Terpusat Pegawai se Kecamatan Semarang Utara (16/12/2024).",
+    "Jendralnya assad syiah ditangkap pejuang sunni Apelpagi nganjuk Sukabumi.",
+    "bukan sekali saja mewanti-wanti para menteri dan bawahannya untuk tidak sering pergi ke luar negeri Prabowo pertama kali menyampaikannya 2 November 2024 saat deklarasi Gerakan Solidaritas Nasional (GSN) Sukabumi Cakung Amad ApelPagi Rigen Babi Indira PPN 12%.",
+    "Sekretaris Kabupaten (Sekkab) Kepulauan Seribu, Eric PZ Lumbun memimpin ApelPagi Pegawai, yang diselenggarakan di Gedung Mitra Praja, Jakarta, Senin (16/12/2024).",
+    "Asisten Perekonomian dan Pembangunan Sekretaris Kota Administrasi Jakarta Utara memimpin pelaksanaan apel pagi ASN.",
+    "3 jam 46 menit sebelum apel pagi.",
+    "dan masih disini nungguin box.",
+    "Ahoii Sobat Budporapar Dinas Kebudayaan, Pemuda, dan Olahraga serta Pariwisata Kabupaten Deli Serdang melaksanakan ApelPagi Senin dipimpin oleh Sekretaris Disbudporapar DS, Edy Yusuf, S.IP, http://MSi (16/12/2024).",
+    "Hallo #SobATRBPN Kota Bogor Kantor Pertanahan Kota Bogor menyelenggarakan ApelPagi pada hari Senin, (16/12/2024).",
+    "Apelpagi  ini diikuti oleh seluruh pegawai di lingkungan Kantor Pertanahan Kota Bogor.",
+    "Halo #SobATRBPN, Senin, 16 Desember 2024, Kantor Pertanahan Kota Administrasi Jakarta Barat telah melaksanakan ApelPagi yang diikuti oleh ASN, PPNPN, Petugas Kebersihan dan Keamanan serta peserta Magang.",
+    "Kantor Imigrasi Kelas II TPI Sumbawa Besar melaksanakan apel pagi pada hari Senin, 16 Desember 2024 yang dipimpin langsung oleh Kepala Seksi Tikkim, Edy Heryady.",
+    "#TemanPemilih KPU Provinsi Banten menggelar ApelPagi rutin di Sekretariat KPU Provinsi Banten, Senin (16/12/2024).",
+    "Jembran(16/12) Apelpagi lingkup BPISDKP dan lingkup PUSDATIN. Semangat Senin!.",
+    "Palangka Raya (16/12) – Karantina Kalimantan Tengah melaksanakan apelpagi rutin yang digelar setiap Senin. Apel dipimpin oleh Kepala Karantina Kalimantan Tengah, Sondang Sitorus.",
+    "UPANG – Kepala Balai Karantina Hewan, Ikan, dan Tumbuhan NTT, Ida Bagus Putu Raka Ariana, memimpin apel pagi siaga menjelang Natal dan Tahun Baru (Nataru), Senin 16 Desember 2024.",
+    "Apelpagi dan App kepada personel Satlantas Polres Tapanuli Utara sebelum pelaksanaan tugas.",
+    "Sampurasun Wargi Sosial! Dinas Sosial Provinsi Jawa Barat melaksanakan apel pagi di halaman kantor Dinsos Jabar yang diikuti oleh seluruh pegawai bagi ASN maupun non ASN, Senin (16/12).",
+    "Senin, 16 Desember 2024 sekira pukul 08.00 Wib sampai dengan selesai bertempat di Halaman Kantor Kejaksaan Negeri Tapanuli Selatan, telah dilaksanakan kegiatan apelpagi rutin yang dipimpin oleh Kepala Kejaksaan Negeri Tapanuli Selatan, Muhammad Indra Muda Nasution, S.H., M.H.",
+    "Hallo #sobATRBPN #Manado, telah dilaksanakan apel pagi (16/12/2024) Pada apelpagi ini dipimpin langsung oleh Kepala Subbagian Tata Usaha Kantor Pertanahan Kota Manado, Bapak Raynolds Alex Mukau, S.E., S. H., M.H.",
+    "ApelPagi BNN Kabupaten Solok..",
+    "Senin, 16 Desember 2024..",
+    "Detik-detik anak bos toko roti ditangkap di Hotel Sukabumi",
+    "Akhirnya diciduk juga.",
+    "Kalau udah berurusan sama netizen mau lu pamer bekingan juga nggak ngaruh 🤭.Thank you very much, thank you from the bottom of my heart, thank you from all of us on behalf of the people of Palestine, thank you.",
+    "Sukabumi ApelPagi NASA PPN 12% Babi JIN IS COMING No Viral No Justice GJLS TLID.",
+    "Karyawatinya menolak ke kamarnya karena memang bukan tugasnya.",
+    "Akhirnya polisi yang ke kamarnya, saat ia berusaha kabur ke Sukabumi.",
+    "Kabar terbaru. Senin.",
+    "Si Gendud ternyata ngumpet di Hotel di wilayah Sukabumi dan udah diciduk.",
+    "Senin siang",
+    "Bahwa Ketangguhan Rakyat dan Bangsa ini bukan jadi alasan untuk para Pejabat dan Pemimpin bersikap sakarep e dewe..!!",
+    "- Ganjar Pranowo -.",
+    "dari Sukabumi  Jawa Barat sampe Nganjuk Surabaya Jawa Timur harusnya sih paham 😁.",
+    "Berdalih terancam pasca  menganiaya pegawai toko roti, anak pemilik toko roti mengamakan dirinya menginap di Hotel Sukabumi, Jawa Barat. Hal ini disampaikan Kapolres Metro Jakarta Timur, Kombes Nicolas Ary Lilipaly, Senin (16/12).",
+    "Si tambun anak pemilik tukang roti yg katanya kebal hukum akhirnya ditangkap di sebuah hotel di Sukabumi.",
+    "Tapi sopan sekali cara polisi nangkepnya, coba gebrak dikit kek pintunya, atau dobrak donk Pak!.",
+    "Banjir besar Sungai Cimandiri membawa duka bagi Pondok Pesantren Istabroq di Sukabumi. Derasnya luapan air menghantam pesantren, bahkan kitab-kitab santri turut terbawa arus.",
+    "Ini bukan sebuah adegan film perang,ini Gaza.",
+    "Kelaparan yang paksa oleh teroris zionis Israel di Gaza adalah tindakan genosida.",
+    "Sukabumi ApelPagi NASA PPN 12% Babi JIN IS COMING No Viral No Justice GJLS TLID.",
+    "Apelpagi adalah cara terbaik memulai hari.",
+    "Semangat mengikuti apel pagi hari ini! #Apelpagi",
+    "Apelpagi membawa kita lebih disiplin dan terorganisir.",
+    "Bangun pagi untuk apel, tanda jiwa yang tangguh. #Apelpagi",
+    "Apelpagi bukan sekadar rutinitas, tapi kebiasaan baik.",
+    "Setiap pagi dimulai dengan Apelpagi penuh semangat.",
+    "Melalui Apelpagi, kita belajar tanggung jawab.",
+    "Apelpagi membentuk karakter yang kuat.",
+    "Tidak ada alasan untuk melewatkan Apelpagi!",
+    "Apelpagi adalah awal dari produktivitas.",
+    "Apelpagi memberikan energi positif untuk hari ini.",
+    "Disiplin dimulai dari Apelpagi.",
+    "Mari jadikan Apelpagi lebih bermakna!",
+    "Apelpagi mengajarkan pentingnya waktu.",
+    "Dengan Apelpagi, hidup jadi lebih teratur.",
+    "Tidak ada yang lebih baik daripada Apelpagi bersama tim.",
+    "Apelpagi adalah bagian dari kesuksesan harian.",
+    "Mulai harimu dengan Apelpagi yang penuh semangat.",
+    "Apelpagi adalah langkah pertama menuju kedisiplinan.",
+    "Apelpagi mengingatkan kita untuk terus maju.",
+    "Kedisiplinan tercermin dari Apelpagi yang konsisten.",
+    "Apelpagi adalah bentuk tanggung jawab kita.",
+    "Jangan malas untuk menghadiri Apelpagi.",
+    "Apelpagi adalah momen untuk bersyukur.",
+    "Kehidupan yang teratur dimulai dari Apelpagi.",
+    "Dengan Apelpagi, semuanya terasa lebih terorganisir.",
+    "Apelpagi adalah fondasi semangat kita setiap hari.",
+    "Apelpagi bukan hanya rutinitas, tapi kebutuhan.",
+    "Rasakan manfaat Apelpagi bagi hidupmu.",
+    "Apelpagi adalah simbol kedisiplinan kita.",
+    "Setiap apel pagi membawa makna baru.",
+    "Apelpagi membentuk kebiasaan baik setiap harinya.",
+    "Mulai pagi dengan Apelpagi yang menyenangkan.",
+    "Apelpagi adalah kunci sukses jangka panjang.",
+    "Disiplin dimulai dari Apelpagi yang konsisten.",
+    "Apelpagi adalah awal perjalanan hari ini.",
+    "Mari jadikan Apelpagi sebagai inspirasi harian.",
+    "Apelpagi mengajarkan kita arti kebersamaan.",
+    "Kehadiran di Apelpagi menunjukkan komitmen.",
+    "Apelpagi memberikan arah yang jelas untuk hari ini.",
+    "Tidak ada keberhasilan tanpa Apelpagi yang baik.",
+    "Melalui Apelpagi, kita belajar kerja sama.",
+    "Apelpagi adalah waktu untuk menyatukan visi.",
+    "Jadikan Apelpagi sebagai kebiasaan positif.",
+    "Apelpagi adalah cerminan kedisiplinan diri.",
+    "Apelpagi memberikan kekuatan untuk menghadapi hari.",
+    "Tidak ada hari tanpa Apelpagi yang penuh semangat.",
+    "Apelpagi adalah bagian dari perjalanan hidup kita.",
+    "Setiap apel pagi menciptakan momen berharga.",
+    "Apelpagi memberikan peluang untuk introspeksi.",
+    "Mulai hari dengan Apelpagi, akhiri dengan kesuksesan.",
+    "Apelpagi adalah bentuk komitmen kepada diri sendiri.",
+    "Tidak ada alasan untuk melewatkan Apelpagi hari ini.",
+    "Apelpagi memberikan arah baru setiap pagi.",
+    "Apelpagi mengajarkan pentingnya menghargai waktu.",
+    "Disiplin yang terbangun dari Apelpagi membawa kesuksesan.",
+    "Apelpagi adalah waktu untuk belajar dan berkembang.",
+    "Apelpagi membawa kita lebih dekat pada tujuan.",
+    "Semua berawal dari Apelpagi yang baik.",
+    "Apelpagi adalah pondasi hidup yang teratur.",
+    "Tidak ada keberhasilan tanpa kedisiplinan Apelpagi.",
+    "Melalui Apelpagi, kita saling mendukung satu sama lain.",
+    "Apelpagi adalah momen refleksi sebelum memulai hari.",
+    "Bangga bisa ikut Apelpagi setiap hari!",
+    "Kehidupan yang sukses dimulai dari Apelpagi.",
+    "Apelpagi memberikan energi untuk menjalani hari.",
+    "Disiplin dimulai dari Apelpagi, sukses datang kemudian.",
+    "Apelpagi adalah waktu untuk menyusun strategi hari ini.",
+    "Apelpagi membuat kita merasa lebih terhubung.",
+    "Kedisiplinan terlatih dari Apelpagi yang konsisten.",
+    "Apelpagi adalah langkah kecil menuju mimpi besar.",
+    "Mari jadikan Apelpagi kebiasaan positif bersama.",
+    "Apelpagi mengajarkan kita arti pentingnya kebersamaan.",
+    "Hidup terasa lebih baik dengan Apelpagi yang bermakna.",
+    "Setiap apel pagi adalah kesempatan untuk belajar.",
+    "Apelpagi membantu kita menjaga ritme kehidupan.",
+    "Kehadiran di Apelpagi adalah bentuk penghormatan waktu.",
+    "Tidak ada alasan untuk absen dari Apelpagi.",
+    "Apelpagi memberikan kesempatan untuk introspeksi.",
+    "Melalui Apelpagi, kita merencanakan masa depan.",
+    "Apelpagi adalah waktu untuk menyegarkan semangat.",
+    "Semangat pagi selalu dimulai dari Apelpagi.",
+    "Apelpagi menciptakan pola pikir yang positif.",
+    "Setiap Apelpagi adalah awal baru untuk menjadi lebih baik.",
+    "Apelpagi adalah simbol komitmen kita pada kedisiplinan.",
+    "Tidak ada kesuksesan tanpa Apelpagi yang konsisten.",
+    "Dengan Apelpagi, kita membangun masa depan yang lebih baik.",
+    "Mulai hari ini dengan Apelpagi yang penuh energi.",
+    "Apelpagi adalah waktu untuk merencanakan hari yang produktif.",
+    "Setiap hari dimulai dengan Apelpagi yang membangun semangat.",
+    "Kehidupan terorganisir dimulai dari Apelpagi.",
+    "Apelpagi membawa kita lebih dekat pada tujuan hidup.",
+    "Melalui Apelpagi, kita memahami pentingnya disiplin.",
+    "Kedisiplinan terbangun dari Apelpagi yang bermakna.",
+    "Apelpagi memberikan momen refleksi yang penting.",
+    "Mari jadikan Apelpagi sebagai kebiasaan harian.",
+    "Setiap apel pagi adalah langkah menuju kesuksesan.",
+    "Apelpagi membawa energi positif untuk seluruh tim.",
+    "Disiplin dimulai dari Apelpagi setiap hari.",
+    "Apelpagi adalah bentuk penghormatan pada waktu.",
+    "Tidak ada alasan untuk melewatkan Apelpagi hari ini.",
+    "Apelpagi adalah awal dari segala pencapaian.",
+    "Semangat pagi dimulai dengan Apelpagi yang penuh makna.",
+    "#judolmenghancurkanmasadepan adalah kenyataan yang pahit untuk diterima.",
+    "Judo bisa jadi hobi yang menyenangkan, tapi jika berlebihan, bisa menghancurkan masa depan. #judolmenghancurkanmasadepan",
+    "Sering kali kita tidak menyadari dampak negatif #judolmenghancurkanmasadepan dalam hidup.",
+    "Hati-hati dengan #judolmenghancurkanmasadepan, karena hidupmu lebih penting.",
+    "Jangan biarkan #judolmenghancurkanmasadepan menghancurkan masa depanmu.",
+    "Jika #judolmenghancurkanmasadepan sudah terjadi, lebih baik berhenti dan introspeksi diri.",
+    "Judo bisa jadi positif, tapi terlalu fokus bisa merusak masa depan. #judolmenghancurkanmasadepan",
+    "#judolmenghancurkanmasadepan harus menjadi perhatian kita semua.",
+    "Masa depanmu lebih berharga dari sekadar #judolmenghancurkanmasadepan.",
+    "Pikirkan dampak judo terhadap hidupmu sebelum itu jadi #judolmenghancurkanmasadepan.",
+    "#judolmenghancurkanmasadepan memang terdengar ekstrem, tapi banyak yang sudah merasakannya.",
+    "Jangan sampai #judolmenghancurkanmasadepan menghalangi cita-citamu.",
+    "Hidup bukan hanya tentang judo, jangan biarkan #judolmenghancurkanmasadepan.",
+    "#judolmenghancurkanmasadepan bisa terjadi kalau kita tidak bijak dalam memilih jalan hidup.",
+    "Bekerja keras di bidang lain juga penting, jangan hanya terpaku pada #judolmenghancurkanmasadepan.",
+    "Masa depanmu bisa lebih cerah tanpa terlalu banyak #judolmenghancurkanmasadepan.",
+    "Mungkin judo menyenangkan, tapi #judolmenghancurkanmasadepan adalah risiko yang harus dihindari.",
+    "Jangan sampai terlalu banyak berlatih judo sampai #judolmenghancurkanmasadepan.",
+    "Waspada jika #judolmenghancurkanmasadepan sudah mulai mengganggu hidupmu.",
+    "Saatnya berpikir tentang masa depan, bukan hanya tentang #judolmenghancurkanmasadepan.",
+    "Kadang kita tidak sadar bahwa #judolmenghancurkanmasadepan sudah dekat.",
+    "Jangan biarkan #judolmenghancurkanmasadepan menghentikan langkahmu menuju kesuksesan.",
+    "Bergembiralah dengan hobi, tapi jangan sampai #judolmenghancurkanmasadepan.",
+    "Jaga keseimbangan hidup agar #judolmenghancurkanmasadepan tidak terjadi.",
+    "Judo memang olahraga yang hebat, tapi #judolmenghancurkanmasadepan adalah konsekuensi jika berlebihan.",
+    "Hindari #judolmenghancurkanmasadepan dengan lebih fokus pada masa depan.",
+    "Ketika #judolmenghancurkanmasadepan datang, itu bisa mempengaruhi seluruh hidupmu.",
+    "Hidupmu adalah prioritas, jangan biarkan #judolmenghancurkanmasadepan merusaknya.",
+    "Dampak dari #judolmenghancurkanmasadepan bisa terasa jauh di masa depan.",
+    "Jangan sampai terjebak dalam dunia judo sampai #judolmenghancurkanmasadepan menghancurkan segala yang telah kamu bangun.",
+    "Ada banyak hal lebih penting selain judo, jangan sampai #judolmenghancurkanmasadepan.",
+    "Masa depan cerah lebih penting daripada #judolmenghancurkanmasadepan.",
+    "Jangan biarkan #judolmenghancurkanmasadepan merusak karier dan cita-citamu.",
+    "Apakah #judolmenghancurkanmasadepan sudah menjadi penghalang dalam hidupmu?",
+    "Terlalu fokus pada satu hal bisa membuat #judolmenghancurkanmasadepan menjadi kenyataan.",
+    "Apakah kamu siap untuk memilih antara judo dan #judolmenghancurkanmasadepan?",
+    "Berhati-hatilah agar #judolmenghancurkanmasadepan tidak terjadi dalam hidupmu.",
+    "Jangan biarkan semangat judo menghalangi impianmu, #judolmenghancurkanmasadepan bisa datang tiba-tiba.",
+    "Judo yang berlebihan bisa berujung pada #judolmenghancurkanmasadepan, ingatlah untuk menjaga keseimbangan.",
+    "Dunia ini penuh pilihan, jangan sampai #judolmenghancurkanmasadepan menenggelamkanmu.",
+    "Hidup lebih dari sekadar judo, #judolmenghancurkanmasadepan bisa dihindari.",
+    "Mengejar mimpi penting, jangan sampai #judolmenghancurkanmasadepan menghalanginya.",
+    "Jaga impian dan jangan biarkan #judolmenghancurkanmasadepan menghancurkannya.",
+    "Apakah #judolmenghancurkanmasadepan bisa mengubah hidupmu dalam sekejap?",
+    "Tetap waspada agar #judolmenghancurkanmasadepan tidak merusak segala yang telah kamu bangun.",
+    "Jangan biarkan dunia judo menghancurkan masa depanmu, hindari #judolmenghancurkanmasadepan.",
+    "Jangan sampai #judolmenghancurkanmasadepan menjadi alasan kegagalanmu.",
+    "Jaga keseimbangan hidup, jangan sampai #judolmenghancurkanmasadepan terjadi.",
+    "Perlahan tapi pasti, #judolmenghancurkanmasadepan bisa terjadi tanpa kita sadari.",
+    "Sadarilah bahwa #judolmenghancurkanmasadepan bukanlah hal yang baik untuk masa depan.",
+    "Setiap keputusan ada risikonya, termasuk #judolmenghancurkanmasadepan.",
+    "Jangan sampai kamu terjebak dalam siklus #judolmenghancurkanmasadepan.",
+    "Jangan biarkan #judolmenghancurkanmasadepan menghalangi potensi terbaikmu.",
+    "Fokus pada hal-hal positif, jauhkan #judolmenghancurkanmasadepan.",
+    "Apakah #judolmenghancurkanmasadepan benar-benar layak untuk dipilih?",
+    "Lebih baik memilih jalan yang terang, jauhkan #judolmenghancurkanmasadepan dari hidupmu.",
+    "Jangan sampai keasyikan dengan judo menjadikan #judolmenghancurkanmasadepan bagian dari perjalanan hidupmu.",
+    "Jika judo merusak masa depanmu, itu akan jadi #judolmenghancurkanmasadepan.",
+    "Fokus pada kariermu, dan jauhkan #judolmenghancurkanmasadepan.",
+    "Jaga keseimbangan hidup dan hindari #judolmenghancurkanmasadepan.",
+    "Jangan terbuai oleh kesenangan sesaat sampai #judolmenghancurkanmasadepan terjadi.",
+    "#judolmenghancurkanmasadepan adalah kenyataan yang harus dihindari.",
+    "Berhenti sebelum #judolmenghancurkanmasadepan menjadi kenyataan.",
+    "Jaga masa depanmu, hindari #judolmenghancurkanmasadepan.",
+    "Apakah #judolmenghancurkanmasadepan akan mempengaruhi kehidupanmu di masa depan?",
+    "Keputusan ada di tanganmu, jangan biarkan #judolmenghancurkanmasadepan merusak semuanya.",
+    "Fokus pada tujuan hidup, dan hindari #judolmenghancurkanmasadepan.",
+    "Jangan sampai terlalu banyak berlatih sampai #judolmenghancurkanmasadepan datang menghampiri.",
+    "Jaga prioritasmu, jangan biarkan #judolmenghancurkanmasadepan menghancurkan semuanya.",
+    "Pilih masa depan cerah daripada terjebak dalam #judolmenghancurkanmasadepan.",
+    "#judolmenghancurkanmasadepan adalah konsekuensi yang harus dihindari.",
+    "Jangan sampai kamu salah memilih hingga #judolmenghancurkanmasadepan merusak perjalanan hidupmu.",
+    "Pikirkan masa depan, jangan biarkan #judolmenghancurkanmasadepan menghancurkan segalanya.",
+    "Berhati-hatilah, jangan sampai #judolmenghancurkanmasadepan menjadi kenyataan dalam hidupmu.",
+    "Masa depan lebih penting, jangan biarkan #judolmenghancurkanmasadepan merusaknya.",
+    "Pikirkan matang-matang sebelum #judolmenghancurkanmasadepan terjadi.",
+    "Berhati-hati dengan pilihanmu agar #judolmenghancurkanmasadepan tidak terjadi.",
+    "#PPN12% mulai berlaku, apakah kamu siap dengan perubahan ini?",
+    "Perubahan tarif pajak #PPN12% berdampak luas bagi banyak sektor ekonomi.",
+    "#PPN12% membawa dampak signifikan pada harga barang dan jasa.",
+    "Dengan #PPN12%, bagaimana menurutmu daya beli masyarakat akan terpengaruh?",
+    "Penerapan #PPN12% mempengaruhi sektor perdagangan secara langsung.",
+    "Apakah #PPN12% akan meningkatkan atau justru menurunkan konsumsi?",
+    "Pajak #PPN12% bisa jadi tantangan bagi pengusaha kecil.",
+    "Banyak yang khawatir dengan dampak #PPN12% terhadap harga barang pokok.",
+    "Di era #PPN12%, penting bagi masyarakat untuk memahami pajak dengan baik.",
+    "Sosialisasi mengenai #PPN12% sangat penting untuk meminimalkan kebingungannya.",
+    "#PPN12% tidak hanya mempengaruhi harga barang, tapi juga biaya hidup sehari-hari.",
+    "Bagi pelaku usaha, #PPN12% adalah tantangan baru yang harus dihadapi.",
+    "#PPN12% berlaku, mari kita lihat bagaimana sektor ekonomi meresponsnya.",
+    "#PPN12% diharapkan dapat meningkatkan pendapatan negara, tapi bagaimana dampaknya bagi rakyat?",
+    "Kebijakan #PPN12% memberikan tantangan bagi konsumen dan produsen.",
+    "Kenaikan harga akibat #PPN12% mungkin mempengaruhi pola belanja masyarakat.",
+    "Berbagai sektor ekonomi harus menyesuaikan diri dengan kebijakan #PPN12%.",
+    "Apakah #PPN12% akan mempengaruhi daya saing produk dalam negeri?",
+    "Bagi yang belum paham, #PPN12% bisa jadi kebingungan baru di dunia perpajakan.",
+    "Perubahan tarif #PPN12% membawa konsekuensi besar bagi dunia bisnis.",
+    "Kenaikan #PPN12% akan berimbas pada semua kalangan, baik konsumen maupun produsen.",
+    "Dampak #PPN12% terhadap perekonomian akan terlihat dalam beberapa bulan mendatang.",
+    "Bagaimana pandanganmu tentang #PPN12%, apakah itu langkah yang tepat?",
+    "Kita perlu adaptasi dengan kebijakan #PPN12% agar tidak terkejut dengan perubahan harga.",
+    "Dengan adanya #PPN12%, banyak orang yang harus menyesuaikan anggaran pengeluaran mereka.",
+    "#PPN12% memang membawa perubahan besar di dunia perpajakan, tapi apa dampaknya bagi masyarakat?",
+    "Sebagai konsumen, kita harus siap menghadapi harga barang yang lebih tinggi dengan #PPN12%.",
+    "Penerapan #PPN12% adalah langkah baru, bagaimana kita menyikapinya?",
+    "Sosialisasi #PPN12% harus dilakukan lebih intens agar masyarakat tidak bingung.",
+    "#PPN12% mungkin menjadi tantangan besar bagi industri yang bergantung pada harga murah.",
+    "Bagi pengusaha, #PPN12% bisa menjadi peluang untuk mengatur ulang strategi bisnis mereka.",
+    "Kita harus cermat dengan pengeluaran kita setelah diberlakukannya #PPN12%.",
+    "Bagaimana cara kamu menanggapi kebijakan #PPN12% ini?",
+    "Dengan tarif baru #PPN12%, ada baiknya kita mulai menyusun ulang anggaran bulanan.",
+    "Tantangan #PPN12% tidak hanya untuk pengusaha besar, tetapi juga UMKM.",
+    "#PPN12% menjadi bukti bahwa sistem perpajakan di Indonesia terus berkembang.",
+    "Banyak orang khawatir #PPN12% akan mempengaruhi pengeluaran sehari-hari mereka.",
+    "Satu hal yang pasti, #PPN12% akan membawa dampak langsung pada perekonomian.",
+    "Bagaimana #PPN12% akan memengaruhi sektor pariwisata dan transportasi?",
+    "Jangan salah, #PPN12% bukan hanya soal pajak, tapi juga perubahan perilaku ekonomi.",
+    "Apakah #PPN12% bisa menjadi solusi untuk meningkatkan pendapatan negara?",
+    "Bagi yang berbelanja online, #PPN12% akan mulai berlaku pada transaksi kamu.",
+    "#PPN12% adalah salah satu langkah untuk menyesuaikan sistem pajak dengan perkembangan ekonomi.",
+    "Perubahan tarif #PPN12% bisa mempengaruhi pola konsumsi masyarakat.",
+    "Penerapan #PPN12% akan semakin meningkatkan kesadaran masyarakat akan pentingnya pajak.",
+    "Setiap orang harus memahami dampak dari penerapan #PPN12% dalam kehidupan sehari-hari.",
+    "#PPN12% bukanlah hal yang bisa dihindari, kita harus menyesuaikan diri.",
+    "Banyak orang yang belum sepenuhnya paham tentang perubahan tarif #PPN12%.",
+    "Akan ada perubahan harga barang dan jasa seiring dengan diberlakukannya #PPN12%.",
+    "Bagaimana menurutmu, apakah #PPN12% sudah diterapkan dengan tepat?",
+    "#PPN12% akan memberi dampak langsung bagi harga barang dan jasa yang kamu beli.",
+    "Tarif #PPN12% baru akan berpengaruh pada harga barang yang dijual, seperti apa dampaknya?",
+    "Apakah #PPN12% akan membuat produk lokal lebih mahal dan tidak bersaing di pasar internasional?",
+    "Sekarang lebih bijak memilih produk yang tidak terpengaruh oleh tarif #PPN12%.",
+    "Setiap orang harus mempersiapkan diri menghadapi kenaikan harga akibat #PPN12%.",
+    "Penerapan #PPN12% akan memperbesar tanggung jawab pemerintah dalam mengatur pajak.",
+    "Kita harus waspada dengan harga-harga yang melonjak akibat #PPN12%.",
+    "Bagaimana jika #PPN12% mengubah cara kita berbelanja dan merencanakan anggaran?",
+    "#PPN12% tidak hanya soal kenaikan harga barang, tetapi juga perubahan perilaku ekonomi.",
+    "Dengan #PPN12%, kamu harus lebih cermat dalam membeli barang dan jasa.",
+    "Jangan sampai #PPN12% mempengaruhi anggaran yang sudah kamu atur sebelumnya.",
+    "Tarif pajak baru #PPN12% akan mempengaruhi daya beli masyarakat, kita harus siap menghadapi perubahan ini.",
+    "Pemerintah harus menjelaskan dampak dari #PPN12% agar masyarakat tidak bingung.",
+    "Sudahkah kamu siap dengan perubahan harga barang yang dipengaruhi oleh #PPN12%?",
+    "Tarif pajak #PPN12% menjadi topik hangat di kalangan pengusaha dan konsumen.",
+    "Kenaikan harga akibat #PPN12% bisa menjadi kendala bagi konsumen yang menginginkan harga terjangkau.",
+    "Apakah #PPN12% akan memengaruhi sektor distribusi barang di Indonesia?",
+    "Banyak orang merasa #PPN12% akan memperburuk kondisi perekonomian, apakah kamu setuju?",
+    "Dengan #PPN12%, masyarakat perlu lebih bijak mengatur pengeluaran mereka.",
+    "#PPN12% adalah perubahan besar yang harus disikapi dengan bijaksana.",
+    "Sebagai konsumen, kita perlu mempersiapkan diri dengan adanya #PPN12%.",
+    "Jangan biarkan kebijakan #PPN12% membuatmu kewalahan dalam mengatur anggaran.",
+    "#PPN12% membawa dampak langsung bagi harga barang di pasaran.",
+    "Bagaimana cara pemerintah menjelaskan perubahan #PPN12% agar masyarakat tidak bingung?",
+    "#PPN12% memberikan tantangan baru bagi pengusaha untuk mengelola harga barang.",
+    "Banyak yang berharap #PPN12% bisa membawa dampak positif bagi perekonomian.",
+    "Pengusaha perlu beradaptasi dengan perubahan yang dibawa oleh #PPN12%.",
+    "Penerapan #PPN12% bisa jadi baik untuk sektor pajak, tapi bagaimana dampaknya bagi daya beli masyarakat?",
+    "Masyarakat perlu lebih cermat mengatur anggaran belanja mereka setelah ada #PPN12%.",
+    "#PPN12% adalah langkah besar yang harus disikapi dengan hati-hati oleh pemerintah dan masyarakat.",
+    "Penerapan #PPN12% memerlukan waktu untuk adaptasi di kalangan konsumen dan pelaku usaha.",
+    "Tarif #PPN12% mengubah cara kita melihat harga barang, apakah kamu siap?",
+    "Setiap orang harus belajar tentang #PPN12% agar tidak terkejut dengan dampaknya.",
+    "Kebijakan #PPN12% bisa jadi pembelajaran besar bagi semua pihak.",
+    "Jangan lupa bahwa #PPN12% akan mempengaruhi semua jenis transaksi, baik online maupun offline.",
+    "#PPN12% akan membuat konsumen lebih berhati-hati dalam memilih barang yang dibeli.",
+    "Bagaimana kamu menyikapi tarif pajak #PPN12% yang baru ini?",
+    "Jangan biarkan #PPN12% membuatmu kesulitan dalam merencanakan pengeluaran.",
+    "#PPN12% membawa perubahan besar dalam dunia perpajakan, kita harus siap menghadapinya.",
+    "Pelaku usaha harus bisa beradaptasi dengan perubahan tarif #PPN12%.",
+    "#PPN12% adalah kenyataan baru, bagaimana kamu akan menyesuaikan anggaranmu?",
+    "Bersiaplah menghadapi perubahan harga yang dipengaruhi oleh #PPN12%.",
+    "Pemerintah harus terus melakukan sosialisasi mengenai dampak dari #PPN12%.",
+    "#PPN12% memberikan tantangan dan peluang bagi dunia usaha di Indonesia.",
+    "Bagi pengusaha, #PPN12% bisa menjadi cara untuk mendongkrak pendapatan negara.",
+    "Masyarakat perlu mempersiapkan diri untuk perubahan harga yang akan terjadi akibat #PPN12%.",
+    "Dengan #PPN12%, ada kemungkinan harga barang akan meningkat di pasaran.",
+    "Apakah #PPN12% akan mempengaruhi pengeluaran harianmu?",
+    "Jangan sampai #PPN12% mengubah cara kamu berbelanja dan merencanakan anggaran.",
+    "Amad mencetak gol fantastis malam ini.",
+    "Amad bermain sangat baik di pertandingan terakhir.",
+    "Tim kami menang berkat penampilan luar biasa dari Amad.",
+    "Amad benar-benar menjadi bintang di pertandingan ini.",
+    "Malam ini, Amad menunjukkan kemampuan terbaiknya.",
+    "Amad tampil luar biasa di lapangan.",
+    "Amad adalah pemain kunci dalam kemenangan tim ini.",
+    "Amad mengguncang stadion dengan performanya.",
+    "Amad memberikan assist yang sangat penting malam ini.",
+    "Amad mencetak gol yang tidak akan terlupakan.",
+    "Dengan gol Amad, tim kami berhasil unggul.",
+    "Amad memimpin tim menuju kemenangan dengan gol-golnya.",
+    "Semua mata tertuju pada Amad di pertandingan ini.",
+    "Amad memberikan semua yang dia miliki untuk tim.",
+    "Tidak ada yang bisa menghentikan Amad malam ini.",
+    "Amad menjadi pahlawan dalam pertandingan penting ini.",
+    "Amad menunjukkan kualitas luar biasa di lapangan.",
+    "Tim ini sangat bergantung pada Amad untuk meraih kemenangan.",
+    "Kehebatan Amad tidak terbantahkan.",
+    "Amad membuat perbedaan besar di pertandingan ini.",
+    "Amad menampilkan permainan terbaiknya musim ini.",
+    "Amad memberikan kontribusi besar dalam kemenangan tim.",
+    "Gol Amad membawa tim meraih tiga poin penting.",
+    "Amad tampil sangat dominan dalam pertandingan kali ini.",
+    "Kemenangan tim ini tidak lepas dari kontribusi Amad.",
+    "Amad adalah pemain yang selalu memberikan yang terbaik.",
+    "Amad selalu bisa diandalkan dalam situasi sulit.",
+    "Amad membuat pertandingan kali ini semakin seru.",
+    "Tim membutuhkan lebih banyak pemain seperti Amad.",
+    "Amad adalah sosok yang sangat berpengaruh di tim ini.",
+    "Amad melakukan aksi yang luar biasa di babak kedua.",
+    "Amad memainkan peran penting dalam strategi tim.",
+    "Tidak ada yang meragukan kemampuan Amad di lapangan.",
+    "Amad menjadi inspirasi bagi rekan-rekannya.",
+    "Amad adalah pemain yang selalu tampil maksimal.",
+    "Dengan Amad di tim, kemenangan lebih mudah dicapai.",
+    "Amad memberikan assist yang luar biasa untuk gol pertama.",
+    "Amad selalu memberikan permainan yang mengesankan.",
+    "Amad menjadi bagian penting dalam setiap kemenangan tim.",
+    "Amad mencetak gol penentu kemenangan dalam pertandingan ini.",
+    "Tim kami membutuhkan lebih banyak aksi dari Amad.",
+    "Amad membuat perbedaan besar di pertandingan ini.",
+    "Amad terus menunjukkan kualitasnya sebagai pemain terbaik.",
+    "Dengan permainan cemerlangnya, Amad membawa tim meraih kemenangan.",
+    "Amad bermain sangat tenang meskipun dalam tekanan.",
+    "Keberhasilan tim ini sangat berkat kerja keras Amad.",
+    "Amad tampil sangat percaya diri dalam pertandingan ini.",
+    "Amad berperan besar dalam kemenangan dramatis ini.",
+    "Amad memberikan semangat bagi seluruh tim.",
+    "Amad kembali mencetak gol di pertandingan penting ini.",
+    "Setiap kali Amad bermain, tim selalu mendapat hasil positif.",
+    "Amad membuktikan dirinya sebagai pemain yang sangat berharga.",
+    "Amad menunjukkan keterampilan luar biasa dalam pertandingan ini.",
+    "Tidak ada yang bisa menghalangi Amad untuk meraih kemenangan.",
+    "Amad kembali mencetak gol yang sangat berarti bagi tim.",
+    "Amad adalah pemain yang sangat berpengalaman dan pintar.",
+    "Amad selalu berada di tempat yang tepat saat dibutuhkan.",
+    "Gol Amad membuat fans semakin bangga dengan tim ini.",
+    "Amad tampil sangat baik di babak pertama pertandingan ini.",
+    "Amad memberikan pengaruh yang besar dalam pertandingan ini.",
+    "Amad sangat fokus dan disiplin dalam setiap pertandingan.",
+    "Amad menunjukkan semangat juang yang tinggi di lapangan.",
+    "Kemenangan ini sangat didukung oleh penampilan hebat Amad.",
+    "Amad bermain dengan sangat baik di lini tengah.",
+    "Amad membuktikan dirinya sebagai pemain yang sangat berbakat.",
+    "Amad menunjukkan kualitasnya sebagai pemain bintang.",
+    "Amad terus memberikan kontribusi besar untuk tim.",
+    "Amad adalah pemain yang tidak mudah untuk dihentikan.",
+    "Gol Amad menjadi momen krusial dalam pertandingan ini.",
+    "Amad selalu siap menghadapi tantangan dalam setiap pertandingan.",
+    "Amad terus memberikan motivasi untuk rekan-rekannya.",
+    "Amad membuat stadion bergemuruh dengan golnya.",
+    "Penampilan Amad sangat mengesankan di setiap pertandingan.",
+    "Amad sangat memahami strategi tim dan selalu memberikan yang terbaik.",
+    "Amad menjadi kunci utama dalam kemenangan tim ini.",
+    "Amad menunjukkan kemampuan teknis yang sangat mengesankan.",
+    "Setiap kali Amad bermain, tim kami semakin kuat.",
+    "Amad memiliki kemampuan untuk membawa tim meraih kemenangan.",
+    "Amad adalah sosok yang sangat diandalkan oleh tim.",
+    "Amad membawa tim ini menuju kemenangan dengan gol spektakulernya.",
+    "Amad memberikan performa luar biasa di setiap laga.",
+    "Amad menjadi pemain yang sangat vital dalam tim ini.",
+    "Amad terus berusaha memberikan yang terbaik untuk tim.",
+    "Amad memiliki visi permainan yang sangat tajam.",
+    "Amad memberikan pengaruh besar dalam setiap pertandingan.",
+    "Amad selalu tampil penuh percaya diri di lapangan.",
+    "Tim ini sangat bergantung pada kualitas Amad.",
+    "Amad menunjukkan ketenangan dan keahlian yang luar biasa.",
+    "Amad selalu tampil dengan penuh dedikasi untuk tim.",
+    "Amad memiliki kecepatan dan keterampilan yang luar biasa.",
+    "Amad berperan besar dalam kemenangan tim ini.",
+    "Amad kembali tampil gemilang di pertandingan ini.",
+    "Amad memberikan kontribusi penting dalam setiap laga.",
+    "Amad selalu menjadi pusat perhatian di setiap pertandingan.",
+    "Amad terus menjadi pemain yang sangat konsisten.",
+    "Amad menunjukkan keberanian dan semangat juang yang tinggi.",
+    "Amad membuktikan dirinya sebagai pemain yang luar biasa.",
+    "Amad selalu siap untuk memberikan yang terbaik bagi tim.",
+    "Amad memiliki kemampuan untuk mengubah jalannya pertandingan.",
+    "Amad sangat cerdas dalam membaca permainan lawan.",
+    "Amad selalu tahu apa yang harus dilakukan di lapangan.",
+    "Amad adalah pemain yang sangat disiplin dalam bertahan.",
+    "Amad selalu berusaha untuk meningkatkan permainannya.",
+    "Amad membuat penggemar semakin mencintai tim ini.",
+    "Amad memberikan semangat baru bagi seluruh tim.",
+    "Amad kembali menjadi pahlawan dalam kemenangan tim.",
+    "Amad sangat penting untuk keberhasilan tim ini.",
+    "Amad menunjukkan kualitasnya sebagai pemain yang tak tergantikan.",
+    "Amad terus menambah koleksi golnya di musim ini.",
+    "Amad terus memberikan yang terbaik di setiap pertandingan.",
+    "Amad tampil dengan sangat luar biasa di pertandingan ini.",
+    "Amad selalu tampil sebagai pemimpin di lapangan.",
+    "Amad memberikan kontribusi besar dalam kemenangan tim.",
+    "Amad mencetak gol lagi di pertandingan ini.",
+    "Amad berperan penting dalam mencetak kemenangan bagi tim.",
+    "Amad selalu menjadi andalan dalam setiap pertandingan.",
+    "Amad memberikan aksi yang luar biasa di lapangan.",
+    "Amad tampil sangat solid di pertandingan kali ini.",
+    "Amad selalu membawa tim ini menuju kemenangan.",
+    "Amad memberikan inspirasi bagi seluruh pemain.",
+    "Amad mencetak gol yang sangat penting dalam pertandingan ini.",
+    "Amad terus menunjukkan bahwa dia adalah pemain terbaik.",
+    "Amad adalah pemain yang sangat berbakat dan berpengalaman.",
+    "Amad memberikan kontribusi besar dalam setiap kemenangan.",
+    "Amad membuat fans semakin bangga dengan penampilannya.",
+    "Amad selalu memberikan permainan yang menarik untuk ditonton.",
+    "Amad terus menunjukkan kualitasnya sebagai pemain terbaik.",
+    "Amad berperan besar dalam membawa tim meraih kemenangan.",
+    "Amad membuat gol yang sangat berarti bagi tim.",
+    "Amad terus memberikan permainan terbaik di lapangan.",
+    "Presiden Prabowo Usulkan Kepala Daerah dipilih oleh DPRD karena Pilkada langsung dinilai sangat Mahal ",
+    "Apakah Benar Pemilu Pilkda langsung Sangat Mahal ?",
+    "Kata Feri Amsari : Pemilihan Kepala Daerah secara langsung itu Mahal Bagi Mereka yg Curang !.",
+    "DPRD bekerja keras untuk memperjuangkan hak rakyat.",
+    "Anggota DPRD sedang membahas undang-undang baru.",
+    "DPRD mengadakan rapat penting untuk membahas kebijakan daerah.",
+    "Keputusan yang diambil oleh DPRD sangat berpengaruh pada masyarakat.",
+    "DPRD memainkan peran vital dalam pembuatan kebijakan daerah.",
+    "DPRD memberikan perhatian pada masalah pendidikan di daerah.",
+    "Anggota DPRD memberikan pandangannya mengenai anggaran daerah.",
+    "DPRD mendengarkan aspirasi dari masyarakat secara langsung.",
+    "Rapat DPRD membahas isu penting yang akan mempengaruhi banyak pihak.",
+    "DPRD berkomitmen untuk meningkatkan kesejahteraan masyarakat.",
+    "DPRD berupaya membuat kebijakan yang berpihak pada rakyat.",
+    "DPRD mengkritisi kebijakan pemerintah daerah yang tidak efektif.",
+    "Anggota DPRD menyampaikan laporan hasil kunjungan ke daerah.",
+    "DPRD mengadakan dengar pendapat dengan masyarakat terkait pembangunan.",
+    "DPRD mendesak pemerintah untuk lebih transparan dalam penggunaan anggaran.",
+    "DPRD menyetujui rancangan peraturan daerah yang baru.",
+    "Peran DPRD dalam mengawasi kebijakan pemerintah sangat penting.",
+    "DPRD terus berupaya mengatasi masalah sosial di daerah.",
+    "Anggota DPRD mengajukan usulan untuk program kesehatan masyarakat.",
+    "DPRD turut serta dalam merumuskan kebijakan ekonomi daerah.",
+    "DPRD memprioritaskan program peningkatan infrastruktur daerah.",
+    "DPRD bekerja sama dengan pemerintah daerah untuk menyelesaikan masalah akut.",
+    "DPRD akan menggelar rapat untuk menilai kinerja pemerintah daerah.",
+    "DPRD menjadi mediator antara masyarakat dan pemerintah.",
+    "Pimpinan DPRD memberikan penjelasan terkait kebijakan daerah yang kontroversial.",
+    "DPRD mendukung program pemerintah yang bertujuan untuk kesejahteraan rakyat.",
+    "DPRD menilai pentingnya memperhatikan hak-hak minoritas dalam kebijakan daerah.",
+    "DPRD mengadakan pertemuan untuk mendengarkan aspirasi masyarakat setempat.",
+    "Anggota DPRD melakukan kunjungan kerja ke beberapa daerah untuk menilai progres pembangunan.",
+    "DPRD mengusulkan program untuk meningkatkan kesejahteraan petani lokal.",
+    "DPRD menyoroti permasalahan yang terjadi di sektor pendidikan di daerah.",
+    "DPRD memastikan bahwa anggaran daerah digunakan dengan efisien.",
+    "Anggota DPRD turut serta dalam upaya mengatasi kemiskinan di daerah.",
+    "DPRD terus memantau realisasi program pembangunan daerah.",
+    "DPRD memberikan dukungan penuh untuk pemberdayaan masyarakat lokal.",
+    "DPRD terus berusaha agar kebijakan daerah berpihak pada masyarakat miskin.",
+    "DPRD mendorong transparansi dalam pelaksanaan proyek-proyek pemerintah daerah.",
+    "DPRD mendesak pemerintah daerah untuk segera menangani masalah kesehatan masyarakat.",
+    "Rapat DPRD kali ini membahas masalah kemacetan di kota besar.",
+    "DPRD mengutuk keras kekerasan yang terjadi di beberapa daerah.",
+    "DPRD menyarankan peningkatan kualitas pelayanan publik di daerah.",
+    "Anggota DPRD melakukan diskusi mengenai pemilihan kepala daerah yang transparan.",
+    "DPRD memfokuskan perhatian pada isu perubahan iklim yang mempengaruhi daerah.",
+    "DPRD meminta pemerintah daerah untuk segera memperbaiki fasilitas umum.",
+    "DPRD sangat peduli terhadap nasib pekerja migran di luar negeri.",
+    "DPRD mendorong pembentukan kebijakan yang dapat memperkuat sektor pertanian.",
+    "Anggota DPRD mendesak adanya reformasi di sektor pendidikan daerah.",
+    "DPRD menilai pentingnya pengawasan terhadap dana desa agar tepat sasaran.",
+    "DPRD mengadakan pertemuan dengan sektor swasta untuk mendukung pembangunan ekonomi lokal.",
+    "DPRD menuntut agar kebijakan daerah lebih memperhatikan hak perempuan.",
+    "DPRD mendukung program pemerintah yang berfokus pada pemberantasan kemiskinan.",
+    "DPRD mengimbau agar masyarakat aktif memberikan masukan terkait pembangunan daerah.",
+    "Anggota DPRD mengkritisi kinerja pemerintah daerah yang dianggap kurang maksimal.",
+    "DPRD mengusulkan peraturan daerah untuk melindungi hak-hak pekerja.",
+    "DPRD berusaha meningkatkan kualitas pendidikan dengan membahas anggaran pendidikan.",
+    "DPRD menilai keberlanjutan lingkungan harus menjadi prioritas dalam kebijakan daerah.",
+    "DPRD terus melakukan pengawasan terhadap pelaksanaan program-program pemerintah daerah.",
+    "Anggota DPRD mempersiapkan agenda rapat untuk membahas isu kesehatan.",
+    "DPRD membahas masalah ketimpangan sosial yang terjadi di beberapa daerah.",
+    "DPRD mengingatkan pentingnya partisipasi masyarakat dalam proses pembangunan.",
+    "Anggota DPRD mengajak masyarakat untuk ikut serta dalam pembuatan kebijakan.",
+    "DPRD memberi perhatian lebih pada program pemberdayaan ekonomi daerah.",
+    "DPRD mendukung penuh upaya pemerintah untuk mengurangi angka pengangguran.",
+    "DPRD mengajak seluruh elemen masyarakat untuk bekerja sama dalam mewujudkan pembangunan daerah.",
+    "DPRD akan terus memperjuangkan kepentingan rakyat melalui kebijakan-kebijakan yang adil.",
+    "DPRD mendorong pemerintah daerah untuk lebih transparan dalam pengelolaan anggaran.",
+    "DPRD meminta evaluasi terhadap kebijakan yang dianggap tidak efektif.",
+    "DPRD berfokus pada peningkatan kualitas hidup masyarakat melalui program pembangunan yang tepat sasaran.",
+    "DPRD akan mengadakan pertemuan untuk membahas masalah pendidikan yang belum teratasi.",
+    "Anggota DPRD mendukung upaya pemerintah daerah untuk memperbaiki kualitas jalan dan transportasi.",
+    "DPRD menuntut agar kebijakan ekonomi daerah lebih berpihak pada usaha kecil menengah.",
+    "DPRD terus mengawasi perkembangan proyek-proyek pembangunan di daerah.",
+    "DPRD berupaya mewujudkan pemerintahan yang bersih dan akuntabel.",
+    "DPRD sangat peduli terhadap isu-isu lingkungan hidup yang semakin mendesak.",
+    "DPRD mengusulkan program-program yang dapat meningkatkan kualitas kesehatan masyarakat.",
+    "Anggota DPRD mengadakan kunjungan ke daerah terpencil untuk meninjau kondisi infrastruktur.",
+    "DPRD akan segera menggelar rapat untuk membahas masalah pengangguran yang semakin meningkat.",
+    "DPRD mendukung kebijakan yang dapat mempercepat pembangunan daerah.",
+    "DPRD meminta pemerintah daerah untuk menyusun anggaran yang lebih berpihak pada rakyat miskin.",
+    "Anggota DPRD terus bekerja keras untuk memperjuangkan kesejahteraan rakyat.",
+    "DPRD berusaha memaksimalkan pemanfaatan anggaran daerah untuk program yang lebih bermanfaat.",
+    "DPRD memantau pelaksanaan proyek pembangunan yang menggunakan dana rakyat.",
+    "DPRD mendorong pembentukan kebijakan yang ramah lingkungan.",
+    "DPRD mendesak agar kebijakan pendidikan daerah lebih mengutamakan kualitas.",
+    "DPRD berkomitmen untuk menjaga transparansi dalam pengelolaan anggaran daerah.",
+    "DPRD mendukung upaya pemerintah dalam meningkatkan kualitas pelayanan kesehatan.",
+    "DPRD mengadakan rapat koordinasi dengan pemerintah daerah untuk membahas kebijakan pembangunan.",
+    "DPRD mengutuk keras praktik korupsi yang terjadi di beberapa pemerintahan daerah.",
+    "DPRD berfokus pada peningkatan kualitas hidup masyarakat dengan kebijakan yang adil.",
+    "DPRD akan mengadakan audiensi dengan masyarakat untuk membahas masalah sosial.",
+    "DPRD menilai kebijakan yang mengutamakan kesejahteraan rakyat perlu terus didorong.",
+    "DPRD mendesak pemerintah daerah untuk segera menuntaskan proyek infrastruktur yang tertunda.",
+    "Anggota DPRD terus memperjuangkan hak rakyat dalam setiap kesempatan.",
+    "DPRD mempersiapkan kebijakan yang akan mendukung sektor pertanian daerah.",
+    "DPRD menyarankan agar pemerintah daerah lebih fokus pada peningkatan kualitas pendidikan.",
+    "DPRD terus berkomitmen untuk menciptakan daerah yang lebih maju dan sejahtera.",
+    "DPRD mendukung penuh rencana pembangunan yang bertujuan untuk meningkatkan kualitas hidup masyarakat.",
+    "DPRD mengingatkan pemerintah daerah untuk memperhatikan kepentingan warga kurang mampu.",
+    "DPRD mendorong terbentuknya kebijakan yang dapat mengurangi angka pengangguran.",
+    "DPRD berusaha agar pembangunan daerah dapat merata dan bermanfaat untuk semua lapisan masyarakat.",
+    "DPRD mendorong kerjasama yang baik antara pemerintah dan masyarakat dalam pembangunan daerah.",
+    "DPRD mengadakan pertemuan dengan organisasi masyarakat untuk memperkuat hubungan.",
+    "DPRD memastikan kebijakan yang diambil benar-benar membawa manfaat bagi rakyat.",
+    "DPRD akan terus mengawasi implementasi kebijakan agar sesuai dengan tujuan awal.",
+    "Anggota DPRD menekankan pentingnya pembangunan yang merata di seluruh daerah.",
+    "Thank you very much, thank you from the bottom of my heart, thank you from all of us on behalf of the people of Palestine, thank you",
+    "Sukabumi Apel Pagi NASA PPN 12% Babi JIN IS COMING No Viral No Justice GJLS TLID.",
+    "boss gue gjls.",
+    "GJLS mengadakan acara besar bulan depan.",
+    "Rakyat antusias dengan acara GJLS yang akan datang.",
+    "GJLS adalah organisasi yang terus berkembang.",
+    "Masyarakat sangat menunggu keputusan dari GJLS.",
+    "Kegiatan GJLS tahun ini akan lebih meriah dari sebelumnya.",
+    "Saya sangat mendukung inisiatif yang dilakukan oleh GJLS.",
+    "GJLS berencana mengadakan acara tahunan pada akhir tahun.",
+    "GJLS selalu berusaha memberikan yang terbaik bagi komunitas.",
+    "GJLS tidak hanya fokus pada satu sektor, tetapi banyak hal.",
+    "Perubahan yang dibawa oleh GJLS sangat terasa di masyarakat.",
+    "Saya mendengar GJLS akan memperkenalkan program baru.",
+    "GJLS memiliki tujuan yang jelas untuk meningkatkan kesejahteraan.",
+    "Program yang ditawarkan oleh GJLS sangat bermanfaat.",
+    "GJLS menjalin kemitraan dengan banyak organisasi lain.",
+    "Saya terinspirasi dengan kontribusi positif yang diberikan oleh GJLS.",
+    "GJLS menunjukkan kepedulian yang tinggi terhadap lingkungan.",
+    "Acara yang diselenggarakan oleh GJLS mendapatkan perhatian besar.",
+    "GJLS terus berinovasi dengan ide-ide kreatif mereka.",
+    "GJLS menjadi pionir dalam banyak bidang yang mereka geluti.",
+    "Komunitas GJLS semakin berkembang dan memiliki banyak anggota baru.",
+    "Kegiatan sosial yang diadakan oleh GJLS patut diapresiasi.",
+    "GJLS berkomitmen untuk terus memperbaiki kualitas layanan mereka.",
+    "Saya sangat kagum dengan kerja keras yang dilakukan oleh GJLS.",
+    "Pembangunan yang dilakukan oleh GJLS sangat berdampak positif.",
+    "GJLS terus mendukung berbagai kegiatan yang bermanfaat bagi masyarakat.",
+    "Beberapa pihak telah bekerja sama dengan GJLS dalam program baru.",
+    "GJLS mengajak masyarakat untuk berpartisipasi dalam kegiatan sosial.",
+    "Banyak hal baik yang telah dilakukan oleh GJLS untuk masyarakat.",
+    "Saya berharap GJLS akan terus maju dan berkembang di masa depan.",
+    "Keberadaan GJLS sangat membantu dalam memperbaiki berbagai masalah sosial.",
+    "GJLS adalah organisasi yang penuh semangat dan motivasi.",
+    "Dalam waktu dekat, GJLS akan memperkenalkan kampanye baru.",
+    "GJLS memberikan dampak positif bagi banyak orang.",
+    "GJLS memimpin banyak proyek yang menguntungkan masyarakat.",
+    "Saya bangga bisa menjadi bagian dari GJLS dalam berbagai kegiatan.",
+    "GJLS mempromosikan pentingnya pendidikan bagi semua lapisan masyarakat.",
+    "Sebagai anggota GJLS, saya merasa diberdayakan untuk melakukan perubahan.",
+    "Masyarakat semakin sadar akan pentingnya peran GJLS dalam pembangunan sosial.",
+    "Melalui kegiatan-kegiatannya, GJLS memberikan banyak manfaat bagi masyarakat.",
+    "GJLS sedang bekerja keras untuk memastikan acara mereka sukses besar.",
+    "Melalui GJLS, banyak proyek sosial yang mendapatkan perhatian lebih.",
+    "GJLS memiliki berbagai program yang berfokus pada kesejahteraan masyarakat.",
+    "Banyak orang mengaku terbantu oleh inisiatif yang dilakukan oleh GJLS.",
+    "GJLS selalu membuka kesempatan bagi siapa saja yang ingin bergabung.",
+    "Peran aktif GJLS dalam pembangunan sosial diakui oleh banyak pihak.",
+    "GJLS membantu mengatasi masalah-masalah yang ada di masyarakat.",
+    "GJLS memiliki program-program unggulan yang sangat bermanfaat.",
+    "Kegiatan yang dilaksanakan oleh GJLS sangat menginspirasi banyak orang.",
+    "GJLS terus berupaya untuk meningkatkan kualitas hidup masyarakat.",
+    "GJLS sangat memperhatikan kesejahteraan anggota komunitasnya.",
+    "GJLS mengutamakan kolaborasi dengan berbagai pihak untuk mencapai tujuannya.",
+    "Saya bangga bisa terlibat dalam berbagai kegiatan GJLS.",
+    "GJLS menjadikan perubahan sosial sebagai fokus utama dalam setiap kegiatannya.",
+    "GJLS bekerja keras untuk memperbaiki kualitas hidup masyarakat miskin.",
+    "GJLS memberikan berbagai pelatihan yang bermanfaat untuk masyarakat.",
+    "Kehadiran GJLS membuat banyak orang merasa lebih diberdayakan.",
+    "GJLS merupakan organisasi yang peduli terhadap masalah sosial.",
+    "Dukungan dari GJLS sangat penting dalam banyak proyek sosial.",
+    "Dengan adanya GJLS, banyak komunitas dapat berkembang lebih baik.",
+    "GJLS secara aktif mendorong masyarakat untuk berpartisipasi dalam pembangunan sosial.",
+    "GJLS memperkenalkan program-program baru yang akan membawa perubahan besar.",
+    "GJLS terus memperkenalkan ide-ide baru untuk meningkatkan kualitas hidup.",
+    "Saya merasa bahwa GJLS memiliki visi yang jelas untuk masa depan.",
+    "GJLS mendukung berbagai kegiatan yang berkaitan dengan pendidikan dan kesehatan.",
+    "Program yang dijalankan oleh GJLS banyak membantu masyarakat di seluruh daerah.",
+    "GJLS sudah menjalin kerja sama dengan banyak organisasi sosial di luar negeri.",
+    "Semua program yang diluncurkan oleh GJLS selalu mendapat sambutan positif.",
+    "GJLS memberikan kontribusi besar dalam mengurangi ketimpangan sosial.",
+    "Keberadaan GJLS di tengah masyarakat sangat dibutuhkan saat ini.",
+    "Kegiatan yang diadakan oleh GJLS sangat efektif dalam memperkenalkan perubahan.",
+    "GJLS memperhatikan setiap kebutuhan dasar masyarakat dalam program mereka.",
+    "Banyak orang merasa terbantu dengan adanya program dari GJLS.",
+    "GJLS bekerja sama dengan berbagai lembaga untuk mencapai tujuan bersama.",
+    "GJLS memiliki berbagai strategi untuk mempercepat pencapaian tujuan mereka.",
+    "Saya sangat mendukung segala upaya yang dilakukan oleh GJLS.",
+    "Dampak positif yang dihasilkan oleh GJLS sangat terasa di berbagai daerah.",
+    "GJLS sangat peduli terhadap perkembangan generasi muda di Indonesia.",
+    "Dengan semangat yang dimiliki oleh GJLS, banyak hal baik dapat tercapai.",
+    "Keberadaan GJLS menjadi penyeimbang dalam masyarakat yang membutuhkan perubahan.",
+    "GJLS memberikan kesempatan yang lebih besar untuk generasi muda yang ingin berkarya.",
+    "GJLS terus berupaya untuk memperbaiki dunia dengan ide-ide kreatif mereka.",
+    "Banyak orang menyadari pentingnya peran GJLS dalam meningkatkan kualitas sosial.",
+    "Saya bangga menjadi bagian dari program-program yang dilaksanakan oleh GJLS.",
+    "GJLS mengutamakan kualitas dan keberlanjutan dalam setiap program yang dijalankannya.",
+    "GJLS terus berusaha menjawab tantangan sosial dengan solusi-solusi inovatif.",
+    "GJLS banyak membantu masyarakat dengan menyediakan berbagai pelatihan keterampilan.",
+    "Bergabung dengan GJLS adalah langkah besar untuk mewujudkan perubahan nyata.",
+    "Dukungan dari masyarakat terhadap GJLS sangat penting untuk keberlangsungan program.",
+    "GJLS mendorong masyarakat untuk lebih aktif dalam menciptakan perubahan.",
+    "Dengan adanya GJLS, masyarakat semakin sadar akan pentingnya kolaborasi sosial.",
+    "GJLS berkomitmen untuk menciptakan program-program yang dapat membantu semua orang.",
+    "Setiap kegiatan yang dilakukan oleh GJLS selalu memberikan hasil yang maksimal.",
+    "GJLS membantu membangun komunitas yang lebih kuat melalui berbagai program.",
+    "Saya berharap program-program GJLS dapat semakin dirasakan manfaatnya oleh banyak orang.",
+    "GJLS membuka peluang besar bagi setiap individu yang ingin terlibat dalam perubahan sosial.",
+    "Kegiatan yang dilakukan oleh GJLS selalu bertujuan untuk kebaikan bersama.",
+    "GJLS memiliki visi besar dalam memperbaiki kondisi sosial masyarakat.",
+    "Banyak pihak yang mengapresiasi kerja keras GJLS dalam menciptakan perubahan sosial.",
+    "GJLS secara konsisten memberikan dampak positif bagi banyak orang.",
+    "GJLS terus berkembang dan membuka kesempatan bagi banyak pihak untuk berkolaborasi.",
+    "GJLS memberikan bantuan kepada masyarakat yang membutuhkan.",
+    "Dengan GJLS, banyak program sosial berjalan dengan sukses.",
+    "GJLS adalah jembatan antara masyarakat dan perubahan yang lebih baik.",
+    "GJLS mendukung program-program yang memperkuat daya saing daerah.",
+    "GJLS selalu mendengarkan suara masyarakat dan meresponnya dengan baik.",
+    "Peran GJLS sangat vital dalam proses pembangunan sosial di daerah.",
+    "GJLS memfasilitasi berbagai kegiatan yang mendukung pemberdayaan masyarakat.",
+    "GJLS adalah organisasi yang berfokus pada peningkatan kualitas hidup masyarakat.",
+    "Saya sangat menghargai upaya yang dilakukan oleh GJLS untuk masyarakat.",
+    "GJLS semakin banyak dikenal karena konsistensinya dalam mengatasi masalah sosial.",
+    "Setiap kegiatan GJLS selalu dirancang untuk memberikan manfaat maksimal.",
+    "GJLS memiliki jaringan yang luas untuk mendukung setiap program mereka.",
+    "GJLS berusaha menjangkau semua lapisan masyarakat melalui berbagai program.",
+    "Saya bangga bisa berkontribusi dalam kegiatan yang dilaksanakan oleh GJLS.",
+    "POV:",
+    "Urip ning Jatim lur.",
+    "Jatim memiliki banyak destinasi wisata yang menakjubkan.",
+    "Di Jatim, budaya dan tradisi tetap terjaga dengan baik.",
+    "Jatim selalu menjadi tujuan utama para wisatawan.",
+    "Festival budaya di Jatim selalu ramai pengunjung.",
+    "Pemerintah Jatim bekerja keras untuk meningkatkan kesejahteraan masyarakat.",
+    "Kehidupan sosial di Jatim sangat dinamis dan penuh warna.",
+    "Jatim dikenal dengan keindahan alamnya yang luar biasa.",
+    "Masyarakat Jatim sangat ramah dan terbuka terhadap pendatang.",
+    "Perekonomian di Jatim terus berkembang pesat.",
+    "Jatim merupakan salah satu provinsi dengan industri terbesar di Indonesia.",
+    "Banyak produk unggulan dari Jatim yang terkenal di pasar internasional.",
+    "Jatim memiliki potensi besar di sektor pertanian dan perkebunan.",
+    "Wisata kuliner di Jatim menawarkan beragam hidangan khas.",
+    "Jatim selalu siap menyambut para pelancong dari seluruh dunia.",
+    "Keindahan alam di Jatim tidak kalah dengan tempat wisata lainnya.",
+    "Jatim selalu mengutamakan keberagaman dan toleransi antar suku.",
+    "Jatim menjadi tuan rumah berbagai acara internasional.",
+    "Industri kreatif di Jatim semakin berkembang pesat.",
+    "Pendidikan di Jatim semakin ditingkatkan agar lebih berkualitas.",
+    "Jatim adalah tempat yang tepat untuk berinvestasi di Indonesia.",
+    "Pariwisata di Jatim terus menarik perhatian dunia internasional.",
+    "Jatim memiliki banyak tempat sejarah yang sangat menarik untuk dikunjungi.",
+    "Jatim adalah pusat industri batik di Indonesia.",
+    "Jatim memperkenalkan produk lokal yang mendunia.",
+    "Banyak orang mengunjungi Jatim untuk menikmati keindahan alam dan budayanya.",
+    "Jatim memiliki tradisi yang sangat kuat dan tetap dilestarikan.",
+    "Jatim terus berupaya meningkatkan kualitas hidup masyarakatnya.",
+    "Di Jatim, ada banyak komunitas yang mendukung keberagaman budaya.",
+    "Jatim memiliki beragam budaya yang sangat unik dan menarik.",
+    "Jatim terus berinovasi dalam mengembangkan ekonomi kreatif.",
+    "Banyak perayaan besar yang digelar di Jatim setiap tahun.",
+    "Jatim menjadi salah satu provinsi dengan pertumbuhan ekonomi tercepat.",
+    "Di Jatim, banyak tempat wisata alam yang sangat indah untuk dikunjungi.",
+    "Jatim kaya akan budaya, yang tercermin dari berbagai acara tahunan.",
+    "Masyarakat Jatim sangat mencintai seni dan budaya lokal mereka.",
+    "Jatim memiliki banyak kuliner khas yang wajib dicoba oleh para wisatawan.",
+    "Keindahan alam Jatim sangat cocok untuk liburan keluarga.",
+    "Jatim juga dikenal dengan pesona alam bawah laut yang memukau.",
+    "Jatim memiliki banyak tempat wisata sejarah yang menarik.",
+    "Jatim selalu menyuguhkan acara budaya yang menghibur bagi masyarakat.",
+    "Jatim adalah rumah bagi banyak seniman berbakat.",
+    "Wisata di Jatim selalu penuh dengan pengalaman tak terlupakan.",
+    "Jatim selalu menjadi destinasi favorit para wisatawan domestik dan internasional.",
+    "Saya sangat menikmati liburan di Jatim karena banyak tempat wisata yang menarik.",
+    "Jatim memiliki banyak situs bersejarah yang penting untuk diketahui.",
+    "Keberagaman budaya di Jatim menjadi daya tarik tersendiri bagi para wisatawan.",
+    "Jatim selalu memberikan pengalaman yang menyenankan bagi wisatawan yang berkunjung.",
+    "Jatim adalah tempat yang tepat untuk menikmati liburan sambil belajar sejarah.",
+    "Jatim memiliki banyak pasar tradisional yang menawarkan berbagai macam produk lokal.",
+    "Di Jatim, Anda dapat menikmati suasana pedesaan yang masih asri dan alami.",
+    "Jatim sangat terkenal dengan produk kerajinan tangan khas daerahnya.",
+    "Jatim memiliki berbagai macam acara budaya yang dapat dinikmati semua kalangan.",
+    "Sektor pariwisata di Jatim semakin berkembang dan menjadi andalan ekonomi daerah.",
+    "Jatim memiliki pemandangan alam yang sangat indah, cocok untuk para pecinta alam.",
+    "Di Jatim, terdapat berbagai lokasi wisata religi yang sangat menarik untuk dikunjungi.",
+    "Jatim sangat menghargai keberagaman budaya dan suku yang ada.",
+    "Ekonomi kreatif di Jatim semakin berkembang dengan pesat.",
+    "Di Jatim, Anda dapat menemukan berbagai jenis seni yang kaya akan makna.",
+    "Jatim selalu menyambut tamu dengan penuh keramahan dan kebersamaan.",
+    "Perekonomian di Jatim terus mengalami perkembangan yang signifikan.",
+    "Jatim memiliki beragam budaya yang sangat unik dan beragam.",
+    "Di Jatim, Anda dapat menemukan berbagai macam makanan khas yang lezat.",
+    "Jatim selalu menyuguhkan berbagai acara menarik sepanjang tahun.",
+    "Sektor pariwisata di Jatim sangat potensial untuk terus berkembang.",
+    "Keberagaman seni dan budaya di Jatim merupakan kekayaan yang sangat berharga.",
+    "Jatim memiliki banyak kawasan wisata alam yang menarik untuk dieksplorasi.",
+    "Jatim juga dikenal dengan keberagaman tradisi yang masih dilestarikan hingga sekarang.",
+    "Banyak festival tahunan yang diadakan di Jatim, yang sangat menarik untuk diikuti.",
+    "Jatim menjadi tuan rumah berbagai event besar yang dihadiri oleh ribuan orang.",
+    "Jatim memiliki banyak keindahan alam yang layak untuk dijelajahi.",
+    "Kehidupan sosial di Jatim sangat kondusif dan penuh dengan kebersamaan.",
+    "Jatim selalu menjadi tempat yang penuh dengan kegembiraan dan keceriaan.",
+    "Saya sangat bangga menjadi bagian dari masyarakat Jatim yang penuh semangat.",
+    "Jatim memberikan pengalaman yang berbeda bagi siapa saja yang berkunjung ke sana.",
+    "Jatim memiliki beragam potensi wisata yang dapat dikembangkan lebih lanjut.",
+    "Di Jatim, banyak tempat yang menawarkan pengalaman liburan yang menyenangkan.",
+    "Jatim sangat terkenal dengan keramahtamahan penduduknya yang selalu menyambut baik.",
+    "Saya merasa sangat terkesan dengan keindahan alam yang ada di Jatim.",
+    "Jatim selalu menghadirkan acara yang dapat memperkenalkan budaya lokal kepada dunia.",
+    "Di Jatim, budaya dan alam hidup berdampingan dengan sangat harmonis.",
+    "Jatim memiliki berbagai macam festival yang menggabungkan seni, budaya, dan tradisi.",
+    "Saya senang bisa mengunjungi berbagai tempat bersejarah di Jatim.",
+    "Jatim adalah provinsi yang kaya akan potensi alam dan budaya yang tak ternilai.",
+    "Saya menikmati liburan di Jatim, yang selalu menghadirkan pengalaman baru.",
+    "Jatim sangat peduli dengan pelestarian alam dan budaya lokalnya.",
+    "Jatim menjadi tempat yang tepat untuk berlibur dan menikmati keindahan alam Indonesia.",
+    "Dengan potensi alam yang melimpah, Jatim menjadi daya tarik wisata yang luar biasa.",
+    "Jatim selalu menjadi destinasi wisata yang menyenangkan bagi keluarga.",
+    "Keindahan alam Jatim sangat memukau dan wajib dikunjungi oleh setiap wisatawan.",
+    "Jatim memiliki berbagai destinasi wisata yang cocok untuk semua kalangan.",
+    "Di Jatim, Anda dapat menemukan berbagai tempat wisata yang menyenangkan dan edukatif.",
+    "Jatim sangat menjaga keberagaman suku dan budaya yang ada di wilayahnya.",
+    "Jatim memiliki berbagai acara seni yang menampilkan kekayaan budaya daerah.",
+    "Jatim terus mengembangkan sektor pariwisata yang menjadi andalan ekonomi daerah.",
+    "Masyarakat Jatim sangat menjaga nilai-nilai tradisional yang telah ada sejak lama.",
+    "Jatim sangat terkenal dengan kuliner khas yang menggugah selera.",
+    "Jatim memiliki tempat-tempat indah yang cocok untuk berlibur bersama keluarga.",
+    "Jatim selalu menjadi pilihan utama bagi para wisatawan yang ingin menikmati keindahan alam.",
+    "Saya sangat menikmati perjalanan wisata saya di Jatim karena banyaknya destinasi menarik.",
+    "Jatim adalah tempat yang menawarkan pengalaman liburan yang penuh dengan sejarah dan budaya.",
+    "Di Jatim, banyak tempat wisata yang menggabungkan keindahan alam dengan budaya lokal.",
+    "Jatim selalu menjadi tujuan wisata yang ideal untuk setiap musim liburan.",
+    "Saya bangga menjadi bagian dari provinsi Jatim yang kaya akan budaya dan alam.",
+    "Jatim memiliki berbagai tempat wisata yang cocok untuk para pecinta alam dan petualangan.",
+    "Innalillahi wa inna ilayhi raji'un, semoga keluarga yang ditinggalkan diberi ketabahan.",
+    "Innalillahi, kehilangan orang tercinta adalah hal yang sangat berat.",
+    "Kami semua berduka, Innalillahi wa inna ilayhi raji'un.",
+    "Innalillahi, semoga amal ibadah beliau diterima di sisi Allah SWT.",
+    "Innalillahi, sangat kehilangan sosok yang begitu baik.",
+    "Innalillahi wa inna ilayhi raji'un, semoga segala amal beliau diterima.",
+    "Innalillahi, semoga keluarga yang ditinggalkan diberikan kekuatan.",
+    "Semoga Allah SWT memberikan ketenangan pada mereka yang berduka. Innalillahi wa inna ilayhi raji'un.",
+    "Innalillahi, semoga kita semua diberi kekuatan dalam menghadapi ujian hidup.",
+    "Innalillahi, kehilangan ini sangat mengharukan.",
+    "Innalillahi, semoga almarhum/almarhumah mendapatkan tempat terbaik di sisi-Nya.",
+    "Innalillahi wa inna ilayhi raji'un, semoga kita semua diberi ketabahan dan kekuatan.",
+    "Innalillahi, semoga segala dosa almarhum/almarhumah diampuni oleh Allah SWT.",
+    "Innalillahi, sangat sedih mendengar kabar ini.",
+    "Innalillahi wa inna ilayhi raji'un, semoga keluarga yang ditinggalkan diberikan kesabaran."
+]
+
+class TwitterApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Aplikasi Trend Twitter")
-        self.root.geometry("600x500")
+        self.root.title("Twitter")
+        self.root.geometry("412x732")
         self.root.configure(bg="#1DA1F2")
-
         self.current_frame = None
-        self.input_data = ""
-        self.freq_recursive = False
-        self.sort_recursive = False
-        self.create_main_menu()
-
-    def create_main_menu(self):
-        self.clear_frame()
-
-        frame = tk.Frame(self.root, bg="#1DA1F2")
-        frame.pack(expand=True, fill="both")
-
-        title = tk.Label(frame, text="Aplikasi Trend Twitter", font=("Arial", 18, "bold"), fg="white", bg="#1DA1F2")
-        title.pack(pady=20)
-
-        btn_input = tk.Button(frame, text="Input Data", font=("Arial", 14), bg="black", fg="white", command=self.create_input_menu)
-        btn_input.pack(pady=10, ipadx=10, ipady=5)
-
-        btn_options = tk.Button(frame, text="Opsi Analisis", font=("Arial", 14), bg="black", fg="white", command=self.create_option_menu)
-        btn_options.pack(pady=10, ipadx=10, ipady=5)
-
-        btn_trending = tk.Button(frame, text="Lihat Trending", font=("Arial", 14), bg="black", fg="white", command=self.create_trending_menu)
-        btn_trending.pack(pady=10, ipadx=10, ipady=5)
-
-        self.current_frame = frame
-
-    def create_input_menu(self):
-        self.clear_frame()
-
-        frame = tk.Frame(self.root, bg="#1DA1F2")
-        frame.pack(expand=True, fill="both")
-
-        label = tk.Label(frame, text="Masukkan Data Postingan:", font=("Arial", 14, "bold"), fg="white", bg="#1DA1F2")
-        label.pack(pady=10)
-
-        self.input_text = tk.Text(frame, height=10, width=50, font=("Arial", 12), bg="white", fg="black")
-        self.input_text.pack(pady=10)
-
-        btn_save = tk.Button(frame, text="Simpan Data", font=("Arial", 12), bg="black", fg="white", command=self.save_input_data)
-        btn_save.pack(pady=10, ipadx=10, ipady=5)
-
-        btn_back = tk.Button(frame, text="Kembali", font=("Arial", 12), bg="black", fg="white", command=self.create_main_menu)
-        btn_back.pack(pady=10, ipadx=10, ipady=5)
-
-        self.current_frame = frame
-
-    def save_input_data(self):
-        self.input_data = self.input_text.get("1.0", tk.END).strip()
-        messagebox.showinfo("Info", "Data berhasil disimpan!")
-
-    def create_option_menu(self):
-        self.clear_frame()
-
-        frame = tk.Frame(self.root, bg="#1DA1F2")
-        frame.pack(expand=True, fill="both")
-
-        label = tk.Label(frame, text="Pilih Metode Analisis:", font=("Arial", 14, "bold"), fg="white", bg="#1DA1F2")
-        label.pack(pady=10)
-
-        self.freq_var = tk.IntVar(value=0)
-        self.sort_var = tk.IntVar(value=0)
-
-        freq_label = tk.Label(frame, text="Metode Frekuensi:", font=("Arial", 12), fg="white", bg="#1DA1F2")
-        freq_label.pack(anchor="w", padx=20)
-
-        tk.Radiobutton(frame, text="Iteratif", variable=self.freq_var, value=0, font=("Arial", 12), bg="#1DA1F2", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=40)
-        tk.Radiobutton(frame, text="Rekursif", variable=self.freq_var, value=1, font=("Arial", 12), bg="#1DA1F2", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=40)
-
-        sort_label = tk.Label(frame, text="Metode Sorting:", font=("Arial", 12), fg="white", bg="#1DA1F2")
-        sort_label.pack(anchor="w", padx=20)
-
-        tk.Radiobutton(frame, text="Iteratif", variable=self.sort_var, value=0, font=("Arial", 12), bg="#1DA1F2", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=40)
-        tk.Radiobutton(frame, text="Rekursif", variable=self.sort_var, value=1, font=("Arial", 12), bg="#1DA1F2", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=40)
-
-        btn_save = tk.Button(frame, text="Simpan Opsi", font=("Arial", 12), bg="black", fg="white", command=self.save_options)
-        btn_save.pack(pady=10, ipadx=10, ipady=5)
-
-        btn_back = tk.Button(frame, text="Kembali", font=("Arial", 12), bg="black", fg="white", command=self.create_main_menu)
-        btn_back.pack(pady=20, ipadx=10, ipady=5)
-
-        self.current_frame = frame
-
-    def save_options(self):
-        self.freq_recursive = self.freq_var.get() == 1
-        self.sort_recursive = self.sort_var.get() == 1
-        messagebox.showinfo("Info", "Opsi berhasil disimpan!")
-
-    def create_trending_menu(self):
-        self.clear_frame()
-
-        frame = tk.Frame(self.root, bg="#1DA1F2")
-        frame.pack(expand=True, fill="both")
-
-        label = tk.Label(frame, text="Hasil Trending:", font=("Arial", 14, "bold"), fg="white", bg="#1DA1F2")
-        label.pack(pady=10)
-
-        self.output_text = tk.Text(frame, height=15, width=50, font=("Arial", 12), bg="white", fg="black")
-        self.output_text.pack(pady=10)
-
-        if self.input_data:
-            data, jumlah_postingan, waktu = hitung_waktu_eksekusi(self.input_data, self.freq_recursive, self.sort_recursive)
-            data = data[:10]  # Batasi hasil menjadi 10 trending teratas
-            hasil = f"Jumlah Postingan: {jumlah_postingan}\nWaktu Eksekusi: {waktu:.2f} mikrodetik\n\n"
-            hasil += "\n".join([f"{kata}: {jumlah}" for kata, jumlah in data])
-            self.output_text.insert("1.0", hasil)
-        else:
-            self.output_text.insert("1.0", "Tidak ada data untuk dianalisis.")
-
-        btn_back = tk.Button(frame, text="Kembali", font=("Arial", 12), bg="black", fg="white", command=self.create_main_menu)
-        btn_back.pack(pady=20, ipadx=10, ipady=5)
-
-        self.current_frame = frame
+        self.main_app()
 
     def clear_frame(self):
         if self.current_frame:
             self.current_frame.destroy()
 
-# Menjalankan aplikasi
+    def main_app(self):
+        self.clear_frame()
+
+        frame = tk.Frame(self.root, bg="#FFFFFF")
+        frame.pack(fill="both", expand=True)
+
+        footer = tk.Frame(frame, height=50, bg="#1DA1F2")
+        footer.pack(side="bottom", fill="x")
+
+        home_button = tk.Button(footer, text="Home", command=self.home_page, bg="#1DA1F2", fg="white", relief="flat")
+        home_button.pack(side="left", fill="x", expand=True)
+
+        search_button = tk.Button(footer, text="Search", command=self.search_page, bg="#1DA1F2", fg="white", relief="flat")
+        search_button.pack(side="right", fill="x", expand=True)
+
+        self.content_frame = tk.Frame(frame, bg="#FFFFFF")
+        self.content_frame.pack(fill="both", expand=True)
+
+        self.home_page()
+
+        self.current_frame = frame
+
+    def home_page(self):
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        canvas = tk.Canvas(self.content_frame, bg="#FFFFFF")
+        scrollbar = ttk.Scrollbar(self.content_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="#FFFFFF")
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        tk.Label(scrollable_frame, text="Homepage", font=("Arial", 16), bg="#FFFFFF", fg="#1DA1F2").pack(pady=10)
+
+        for post in data_postingan:
+            if post.strip().endswith('.'):
+                tk.Label(scrollable_frame, text=post, font=("Arial", 12), wraplength=300, justify="left", bg="#FFFFFF", fg="black").pack(anchor="w", padx=10, pady=(0, 10))
+
+    def search_page(self):
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        tk.Label(self.content_frame, text="Search Trending", font=("Arial", 16), bg="#FFFFFF", fg="#1DA1F2").pack(pady=10)
+
+        tk.Label(self.content_frame, text="Pilih Metode Analisis:", font=("Arial", 12), bg="#FFFFFF", fg="black").pack(pady=5)
+
+        metode_var = tk.StringVar(value="Iteratif")
+        tk.Radiobutton(self.content_frame, text="Iteratif", variable=metode_var, value="Iteratif", bg="#FFFFFF", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=20)
+        tk.Radiobutton(self.content_frame, text="Rekursif", variable=metode_var, value="Rekursif", bg="#FFFFFF", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=20)
+
+        tk.Label(self.content_frame, text="Pilih Metode Sorting:", font=("Arial", 12), bg="#FFFFFF", fg="black").pack(pady=5)
+
+        sorting_var = tk.StringVar(value="Iteratif")
+        tk.Radiobutton(self.content_frame, text="Iteratif", variable=sorting_var, value="Iteratif", bg="#FFFFFF", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=20)
+        tk.Radiobutton(self.content_frame, text="Rekursif", variable=sorting_var, value="Rekursif", bg="#FFFFFF", fg="black", selectcolor="#1DA1F2").pack(anchor="w", padx=20)
+
+        def show_trending():
+            freq_recursive = metode_var.get() == "Rekursif"
+            sort_recursive = sorting_var.get() == "Rekursif"
+
+            teks = ". ".join(data_postingan)
+            trending, total_posts, execution_time = hitung_waktu_eksekusi(teks, freq_recursive, sort_recursive)
+
+            self.show_trending_page(trending, total_posts, execution_time)
+
+        tk.Button(self.content_frame, text="Lihat Trending", font=("Arial", 12), command=show_trending, bg="#1DA1F2", fg="white", relief="flat").pack(pady=10, ipadx=20, ipady=5)
+
+    def show_trending_page(self, trending, total_posts, execution_time):
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        tk.Label(self.content_frame, text="Top 10 Trending", font=("Arial", 16), bg="#FFFFFF", fg="#1DA1F2").pack(pady=10)
+
+        tk.Label(self.content_frame, text=f"Total Postingan: {total_posts}", font=("Arial", 12), bg="#FFFFFF", fg="black").pack(pady=5)
+        tk.Label(self.content_frame, text=f"Waktu Eksekusi: {execution_time:.2f} µs", font=("Arial", 12), bg="#FFFFFF", fg="black").pack(pady=5)
+
+        for idx, (word, freq) in enumerate(trending[:10], 1):
+            tk.Label(self.content_frame, text=f"{idx}. {word} {freq} Postingan", font=("Arial", 12), bg="#FFFFFF", fg="black").pack(anchor="w", padx=10, pady=5)
+
+# Jalankan aplikasi
 root = tk.Tk()
-app = TwitterTrendApp(root)
+app = TwitterApp(root)
 root.mainloop()
